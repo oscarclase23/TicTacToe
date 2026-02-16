@@ -1,0 +1,63 @@
+{
+    "records": [
+        {
+            "playerName": "Player",
+            "wins": 7,
+            "losses": 9,
+            "draws": 1,
+            "currentStreak": 1,
+            "bestStreak": 2,
+            "pvpWins": 7,
+            "pvpLosses": 4,
+            "pveLosses": 5,
+            "pveDraws": 1,
+            "winsByBoardSize": {
+                "3": 5,
+                "5": 2
+            },
+            "totalMoves": 74,
+            "totalTimeSeconds": 229,
+            "favoriteMove": {
+                "row": 2,
+                "col": 0
+            },
+            "moveFrequencies": {
+                "1,1": 8,
+                "2,0": 11,
+                "0,0": 8,
+                "1,2": 6,
+                "2,2": 9,
+                "1,0": 7,
+                "0,2": 9,
+                "2,1": 8,
+                "0,1": 8
+            }
+        },
+        {
+            "playerName": "Unknown",
+            "wins": 1,
+            "losses": 7,
+            "bestStreak": 1,
+            "pvpWins": 1,
+            "pvpLosses": 4,
+            "pveLosses": 3,
+            "winsByBoardSize": {
+                "3": 1
+            },
+            "totalMoves": 12,
+            "totalTimeSeconds": 561,
+            "favoriteMove": {
+                "row": 2,
+                "col": 2
+            },
+            "moveFrequencies": {
+                "0,1": 1,
+                "2,0": 1,
+                "2,2": 3,
+                "1,1": 3,
+                "0,2": 2,
+                "1,0": 2
+            }
+        }
+    ]
+}
