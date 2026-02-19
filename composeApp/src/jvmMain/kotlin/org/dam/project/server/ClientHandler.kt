@@ -9,9 +9,6 @@ import java.io.InputStreamReader
 import java.io.PrintWriter
 import java.net.Socket
 
-/**
- * Handles communication with a single client.
- */
 class ClientHandler(
     private val socket: Socket,
     private val server: GameServer
@@ -24,24 +21,18 @@ class ClientHandler(
     var playerName: String? = null
     var currentMatchId: String? = null
 
-    fun setMatchId(matchId: String) {
-        this.currentMatchId = matchId
-    }
+    fun setMatchId(matchId: String) { this.currentMatchId = matchId }
 
     suspend fun handle() = withContext(Dispatchers.IO) {
         try {
             println("[ClientHandler] Client connected from ${socket.inetAddress}")
-
-            // Send records immediately (Server speaks first)
             println("[ClientHandler] Sending initial records...")
             val recordsData = server.records.getSyncData()
             sendMessage(MessageType.RECORDS_SYNC, json.encodeToString(recordsData))
             println("[ClientHandler] Initial records sent.")
 
-            // Read messages in loop
             while (isActive && !socket.isClosed) {
                 val line = input.readLine() ?: break
-
                 try {
                     val message = json.decodeFromString<NetworkMessage>(line)
                     processMessage(message)
@@ -69,7 +60,7 @@ class ClientHandler(
             MessageType.JOIN_QUEUE -> handleJoinQueue(message.payload)
             MessageType.CANCEL_QUEUE -> handleCancelQueue()
             MessageType.LEAVE_GAME -> handleLeaveGame()
-            MessageType.SURRENDER -> handleSurrender()   // FIX: was falling to else branch
+            MessageType.SURRENDER -> handleSurrender()  // FIX: was missing, fell to else branch
             MessageType.DISCONNECT -> close()
             else -> sendError("UNKNOWN_MESSAGE", "Unknown message type: ${message.type}")
         }
@@ -81,13 +72,11 @@ class ClientHandler(
             playerId = server.registerClient(this, request.playerName, request.previousPlayerId)
             playerName = request.playerName
 
-            val response = ConnectResponse(
+            sendMessage(MessageType.CONNECT, json.encodeToString(ConnectResponse(
                 success = true,
                 message = "Connected successfully",
                 playerId = playerId
-            )
-            sendMessage(MessageType.CONNECT, json.encodeToString(response))
-
+            )))
             println("[ClientHandler] Player connected: $playerId (${request.playerName})")
         } catch (e: Exception) {
             println("[ClientHandler] Error handling connect: ${e.message}")
@@ -98,28 +87,21 @@ class ClientHandler(
     private suspend fun handleCreateGame(payload: String) {
         try {
             val config = json.decodeFromString<GameConfig>(payload)
-            val pid = playerId ?: run {
-                sendError("NOT_CONNECTED", "Must connect first")
-                return
-            }
+            val pid = playerId ?: run { sendError("NOT_CONNECTED", "Must connect first"); return }
 
             val matchId = server.createPVEGame(pid, config)
             currentMatchId = matchId
-
             println("[ClientHandler] Created PVE game: $matchId for player $pid")
 
             val session = server.getSession(matchId)
             if (session != null) {
-                val gameState = session.getGameState()
-                sendMessage(MessageType.GAME_STATE, json.encodeToString(gameState))
+                sendMessage(MessageType.GAME_STATE, json.encodeToString(session.getGameState()))
 
-                // If AI goes first (AI is X), trigger AI move immediately
                 if (session.playerX == "AI" && session.game.getCurrentPlayer() == "X") {
                     println("[ClientHandler] AI goes first, triggering initial AI move")
                     CoroutineScope(Dispatchers.IO).launch {
                         delay(500)
-                        val aiSymbol = "X"
-                        val aiMove = GameAI.getBestMove(session.game, session.config.difficulty, aiSymbol)
+                        val aiMove = GameAI.getBestMove(session.game, session.config.difficulty, "X")
                         server.processMove(matchId, "AI", aiMove)
                     }
                 }
@@ -143,10 +125,7 @@ class ClientHandler(
     private suspend fun handleJoinQueue(payload: String) {
         try {
             val request = json.decodeFromString<JoinQueueRequest>(payload)
-            val pid = playerId ?: run {
-                sendError("NOT_CONNECTED", "Not connected")
-                return
-            }
+            val pid = playerId ?: run { sendError("NOT_CONNECTED", "Not connected"); return }
             server.queuePlayer(pid, request.preferredBoardSize, request.timeLimit, request.totalRounds)
         } catch (e: Exception) {
             println("[ClientHandler] Error joining queue: ${e.message}")
@@ -164,19 +143,13 @@ class ClientHandler(
         server.processSurrender(matchId, pid)
     }
 
-    /**
-     * Handles SURRENDER message - player explicitly surrenders the current game.
-     * FIX: Previously this fell through to the else branch and returned an
-     * "Unknown message type: SURRENDER" error, which left the game session
-     * in limbo and caused the client to get confused.
-     */
     private suspend fun handleSurrender() {
         val pid = playerId ?: run {
             println("[ClientHandler] SURRENDER received but no player ID")
             return
         }
         val matchId = currentMatchId ?: run {
-            println("[ClientHandler] SURRENDER received but no active match for player $pid")
+            println("[ClientHandler] SURRENDER received but no active match for $pid")
             return
         }
         println("[ClientHandler] Player $pid surrendered match $matchId")
@@ -186,18 +159,9 @@ class ClientHandler(
     private suspend fun handleMakeMove(payload: String) {
         try {
             val moveRequest = json.decodeFromString<MoveRequest>(payload)
-            val matchId = currentMatchId ?: run {
-                sendError("NO_ACTIVE_GAME", "No active game")
-                return
-            }
-
-            val pid = playerId ?: run {
-                sendError("NOT_CONNECTED", "Not connected")
-                return
-            }
-
+            val matchId = currentMatchId ?: run { sendError("NO_ACTIVE_GAME", "No active game"); return }
+            val pid = playerId ?: run { sendError("NOT_CONNECTED", "Not connected"); return }
             server.processMove(matchId, pid, moveRequest.position)
-
         } catch (e: Exception) {
             println("[ClientHandler] Error handling move: ${e.message}")
             sendError("MOVE_ERROR", "Failed to process move: ${e.message}")
@@ -206,17 +170,14 @@ class ClientHandler(
 
     fun sendMessage(type: MessageType, payload: String) {
         try {
-            val message = NetworkMessage(type, payload)
-            val jsonString = json.encodeToString(message)
-            output.println(jsonString)
+            output.println(json.encodeToString(NetworkMessage(type, payload)))
         } catch (e: Exception) {
             println("[ClientHandler] Error sending message: ${e.message}")
         }
     }
 
     private fun sendError(code: String, message: String) {
-        val errorMessage = ErrorMessage(code, message, recoverable = true)
-        sendMessage(MessageType.ERROR, json.encodeToString(errorMessage))
+        sendMessage(MessageType.ERROR, json.encodeToString(ErrorMessage(code, message, recoverable = true)))
     }
 
     fun close() {
