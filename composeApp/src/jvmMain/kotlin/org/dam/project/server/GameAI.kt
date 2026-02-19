@@ -33,7 +33,7 @@ object GameAI {
     }
 
     private fun getMaxDepth(boardSize: Int): Int = when (boardSize) {
-        3 -> Int.MAX_VALUE  // Unbeatable on 3x3
+        3 -> 100  // Unbeatable on 3x3 (depth 9 max, so 100 is plenty)
         4 -> 5
         5 -> 4
         else -> 3

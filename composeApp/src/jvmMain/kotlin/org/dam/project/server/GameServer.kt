@@ -155,6 +155,9 @@ class GameServer(val config: ServerConfig) {
             isDraw = false, isPVE = session.isAIGame,
             boardSize = session.config.boardSize, difficulty = session.config.difficulty
         )
+        // Sync records to ALL connected clients
+        broadcastAll(MessageType.RECORDS_SYNC, json.encodeToString(records.getSyncData()))
+        
         session.stopTimer()
         activeGames.remove(matchId)
         persistenceManager.save(activeGames)
@@ -262,6 +265,9 @@ class GameServer(val config: ServerConfig) {
             durationSeconds = duration
         )
 
+        // Sync records to ALL connected clients
+        broadcastAll(MessageType.RECORDS_SYNC, json.encodeToString(records.getSyncData()))
+
         activeGames.remove(session.matchId)
         persistenceManager.save(activeGames)
     }
@@ -337,6 +343,10 @@ class GameServer(val config: ServerConfig) {
         listOf(session.playerX, session.playerO).forEach { pid ->
             if (pid != "AI") clients[pid]?.sendMessage(type, payload)
         }
+    }
+
+    fun broadcastAll(type: MessageType, payload: String) {
+        clients.values.forEach { it.sendMessage(type, payload) }
     }
 
     fun getSession(matchId: String): GameSession? = activeGames[matchId]

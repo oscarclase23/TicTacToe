@@ -1,318 +1,152 @@
-=== Log started at 2026-02-19T16:30:59.9756263 ===
+=== Log started at 2026-02-19T17:47:49.0721291 ===
 Logging to file: C:\Users\oscar\Documents\IntelliJ\TicTacToe\composeApp\client.log
 [NetworkClient] Connection closed
 [NetworkClient] Connection closed
 [NetworkClient] Connecting to 127.0.0.1:5678...
 [NetworkClient] Connected to 127.0.0.1:5678
-[GameClient] Processed 2 records
-[GameClient] Connected with ID: d85ea883-2d31-4342-93ad-e8c136451636
+[GameClient] Processed 3 records
+[GameClient] Connected with ID: 94722c2c-786b-4dbc-8367-900bc9d1c5ac
 [GameClient] Starting message listener...
 [GameClient] Received message: GAME_FOUND
 [GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=dba6f819-7bce-40dc-96eb-4344c0bba24b, currentPlayer=X
-[GameClient] Navigating to Game: dba6f819-7bce-40dc-96eb-4344c0bba24b
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 1, col 1
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=X
+[GameClient] Navigating to Game: 561b098d-06bb-4e04-a000-3633d62dff28
 [GameClient] Received message: MOVE_RESULT
 [GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=dba6f819-7bce-40dc-96eb-4344c0bba24b, currentPlayer=O
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=dba6f819-7bce-40dc-96eb-4344c0bba24b, currentPlayer=X
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=O
 [BoardCell] Cell clicked! symbol=''
 [GameClient] Sending move: row 2, col 0
 [GameClient] Received message: MOVE_RESULT
 [GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=dba6f819-7bce-40dc-96eb-4344c0bba24b, currentPlayer=O
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=X
 [GameClient] Received message: MOVE_RESULT
 [GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=dba6f819-7bce-40dc-96eb-4344c0bba24b, currentPlayer=X
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 0, col 0
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=dba6f819-7bce-40dc-96eb-4344c0bba24b, currentPlayer=O
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=dba6f819-7bce-40dc-96eb-4344c0bba24b, currentPlayer=X
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 1, col 0
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=dba6f819-7bce-40dc-96eb-4344c0bba24b, currentPlayer=O
-[GameClient] Received message: ROUND_END
-[GameClient] Round ended. Winner: X
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=dba6f819-7bce-40dc-96eb-4344c0bba24b, currentPlayer=X
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 1, col 1
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=dba6f819-7bce-40dc-96eb-4344c0bba24b, currentPlayer=O
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=dba6f819-7bce-40dc-96eb-4344c0bba24b, currentPlayer=X
-[GameClient] Received message: MATCH_END
-[GameClient] Match ended. Winner: david
-[GameClient] Received message: GAME_FOUND
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=21efdd1c-9819-4d09-9c2b-a7c42023cf2f, currentPlayer=X
-[GameClient] Navigating to Game: 21efdd1c-9819-4d09-9c2b-a7c42023cf2f
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 1, col 1
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=21efdd1c-9819-4d09-9c2b-a7c42023cf2f, currentPlayer=O
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=21efdd1c-9819-4d09-9c2b-a7c42023cf2f, currentPlayer=X
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 1, col 2
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=21efdd1c-9819-4d09-9c2b-a7c42023cf2f, currentPlayer=O
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=21efdd1c-9819-4d09-9c2b-a7c42023cf2f, currentPlayer=X
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 0, col 1
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=21efdd1c-9819-4d09-9c2b-a7c42023cf2f, currentPlayer=O
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=21efdd1c-9819-4d09-9c2b-a7c42023cf2f, currentPlayer=X
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 2, col 1
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=21efdd1c-9819-4d09-9c2b-a7c42023cf2f, currentPlayer=O
-[GameClient] Received message: ROUND_END
-[GameClient] Round ended. Winner: X
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=21efdd1c-9819-4d09-9c2b-a7c42023cf2f, currentPlayer=X
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 0, col 1
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=21efdd1c-9819-4d09-9c2b-a7c42023cf2f, currentPlayer=O
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=21efdd1c-9819-4d09-9c2b-a7c42023cf2f, currentPlayer=X
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 2, col 1
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=21efdd1c-9819-4d09-9c2b-a7c42023cf2f, currentPlayer=O
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=21efdd1c-9819-4d09-9c2b-a7c42023cf2f, currentPlayer=X
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 1, col 2
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=21efdd1c-9819-4d09-9c2b-a7c42023cf2f, currentPlayer=O
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=21efdd1c-9819-4d09-9c2b-a7c42023cf2f, currentPlayer=X
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=O
 [BoardCell] Cell clicked! symbol=''
 [GameClient] Sending move: row 2, col 2
 [GameClient] Received message: MOVE_RESULT
 [GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=21efdd1c-9819-4d09-9c2b-a7c42023cf2f, currentPlayer=O
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=X
 [GameClient] Received message: MOVE_RESULT
 [GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=21efdd1c-9819-4d09-9c2b-a7c42023cf2f, currentPlayer=X
-[GameClient] Received message: ROUND_END
-[GameClient] Round ended. Winner: O
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=21efdd1c-9819-4d09-9c2b-a7c42023cf2f, currentPlayer=X
-[GameClient] Received message: MATCH_END
-[GameClient] Match ended. Winner: david
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=3eda6ea7-a217-4eeb-953c-ee448894dece, currentPlayer=X
-[GameClient] Navigating to Game: 3eda6ea7-a217-4eeb-953c-ee448894dece
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 1, col 1
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=3eda6ea7-a217-4eeb-953c-ee448894dece, currentPlayer=O
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=3eda6ea7-a217-4eeb-953c-ee448894dece, currentPlayer=X
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=O
 [BoardCell] Cell clicked! symbol=''
 [GameClient] Sending move: row 0, col 1
 [GameClient] Received message: MOVE_RESULT
 [GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=3eda6ea7-a217-4eeb-953c-ee448894dece, currentPlayer=O
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=X
 [GameClient] Received message: MOVE_RESULT
 [GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=3eda6ea7-a217-4eeb-953c-ee448894dece, currentPlayer=X
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 2, col 1
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=3eda6ea7-a217-4eeb-953c-ee448894dece, currentPlayer=O
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=O
 [GameClient] Received message: ROUND_END
 [GameClient] Round ended. Winner: X
 [GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=3eda6ea7-a217-4eeb-953c-ee448894dece, currentPlayer=X
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, [GameClient] Deco[GameClient] Received message: MOVE_RESULT
+[GameClient] Received message: GAME_STATE
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=O
 [BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 1, col 1
+[GameClient] Sending move: row 2, col 2
 [GameClient] Received message: MOVE_RESULT
 [GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=3eda6ea7-a217-4eeb-953c-ee448894dece, currentPlayer=O
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=X
 [GameClient] Received message: MOVE_RESULT
 [GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=3eda6ea7-a217-4eeb-953c-ee448894dece, currentPlayer=X
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=O
 [BoardCell] Cell clicked! symbol=''
 [GameClient] Sending move: row 1, col 0
 [GameClient] Received message: MOVE_RESULT
 [GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=3eda6ea7-a217-4eeb-953c-ee448894dece, currentPlayer=O
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=X
 [GameClient] Received message: MOVE_RESULT
 [GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=3eda6ea7-a217-4eeb-953c-ee448894dece, currentPlayer=X
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=O
+[BoardCell] Cell clicked! symbol=''
+[GameClient] Sending move: row 0, col 1
+[GameClient] Received message: MOVE_RESULT
+[GameClient] Received message: GAME_STATE
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, [GameClient] Deco[GameClient] Received message: MOVE_RESULT
+[GameClient] Received message: GAME_STATE
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=O
 [BoardCell] Cell clicked! symbol=''
 [GameClient] Sending move: row 0, col 2
 [GameClient] Received message: MOVE_RESULT
 [GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=3eda6ea7-a217-4eeb-953c-ee448894dece, currentPlayer=O
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=X
 [GameClient] Received message: MOVE_RESULT
 [GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=3eda6ea7-a217-4eeb-953c-ee448894dece, currentPlayer=X
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=O
+[GameClient] Received message: ROUND_END
+[GameClient] Round ended. Winner: null
+[GameClient] Received message: GAME_STATE
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=X
+[GameClient] Received message: MOVE_RESULT
+[GameClient] Received message: GAME_STATE
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=O
+[BoardCell] Cell clicked! symbol=''
+[GameClient] Sending move: row 0, col 2
+[GameClient] Received message: MOVE_RESULT
+[GameClient] Received message: GAME_STATE
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=X
+[GameClient] Received message: MOVE_RESULT
+[GameClient] Received message: GAME_STATE
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=O
+[BoardCell] Cell clicked! symbol=''
+[GameClient] Sending move: row 0, col 0
+[GameClient] Received message: MOVE_RESULT
+[GameClient] Received message: GAME_STATE
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=X
+[GameClient] Received message: MOVE_RESULT
+[GameClient] Received message: GAME_STATE
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=O
+[GameClient] Received message: ROUND_END
+[GameClient] Round ended. Winner: X
+[GameClient] Received message: GAME_STATE
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=X
+[GameClient] Received message: MOVE_RESULT
+[GameClient] Received message: GAME_STATE
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=O
+[BoardCell] Cell clicked! symbol=''
+[GameClient] Sending move: row 0, col 2
+[GameClient] Received message: MOVE_RESULT
+[GameClient] Received message: GAME_STATE
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=X
+[GameClient] Received message: MOVE_RESULT
+[GameClient] Received message: GAME_STATE
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=O
+[BoardCell] Cell clicked! symbol=''
+[GameClient] Sending move: row 0, col 1
+[GameClient] Received message: MOVE_RESULT
+[GameClient] Received message: GAME_STATE
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=X
+[GameClient] Received message: MOVE_RESULT
+[GameClient] Received message: GAME_STATE
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=O
 [BoardCell] Cell clicked! symbol=''
 [GameClient] Sending move: row 2, col 0
 [GameClient] Received message: MOVE_RESULT
 [GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=3eda6ea7-a217-4eeb-953c-ee448894dece, currentPlayer=O
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=X
+[GameClient] Received message: MOVE_RESULT
+[GameClient] Received message: GAME_STATE
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=O
+[BoardCell] Cell clicked! symbol=''
+[GameClient] Sending move: row 1, col 2
+[GameClient] Received message: MOVE_RESULT
+[GameClient] Received message: GAME_STATE
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=X
+[GameClient] Received message: MOVE_RESULT
+[GameClient] Received message: GAME_STATE
+[GameClient] Decoded GameState: matchId=561b098d-06bb-4e04-a000-3633d62dff28, currentPlayer=O
 [GameClient] Received message: ROUND_END
 [GameClient] Round ended. Winner: X
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=3eda6ea7-a217-4eeb-953c-ee448894dece, currentPlayer=X
 [GameClient] Received message: MATCH_END
-[GameClient] Match ended. Winner: AI
-[GameClient] Navigating to Game: 3eda6ea7-a217-4eeb-953c-ee448894dece
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=X
-[GameClient] Navigating to Game: 173f8117-669d-4139-9ad0-faa133eac3b2
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=O
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 2, col 0
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=X
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=O
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 0, col 0
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=X
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=O
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 2, col 1
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=X
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=O
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 1, col 0
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=X
+[GameClient] Match ended. Winner: 94722c2c-786b-4dbc-8367-900bc9d1c5ac
+[GameClient] Received message: RECORDS_SYNC
+[GameClient] Records updated: 4
+4e04-a000-3633d62dff28, currentPlayer=O
 [GameClient] Received message: ROUND_END
-[GameClient] Round ended. Winner: O
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=X
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=O
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 0, col 2
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=X
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=O
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 1, col 0
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=X
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=O
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 0, col 0
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=X
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=O
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 2, col 1
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=X
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=O
-[GameClient] Received message: ROUND_END
-[GameClient] Round ended. Winner: null
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=X
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=O
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 0, col 2
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=X
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=O
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 1, col 0
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=X
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=O
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 0, col 0
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=X
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=O
-[BoardCell] Cell clicked! symbol=''
-[GameClient] Sending move: row 2, col 1
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=X
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=O
-[GameClient] Received message: ROUND_END
-[GameClient] Round ended. Winner: null
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=X
-[GameClient] Navigating to Game: 173f8117-669d-4139-9ad0-faa133eac3b2
-[GameClient] Received message: MOVE_RESULT
-[GameClient] Received message: GAME_STATE
-[GameClient] Decoded GameState: matchId=173f8117-669d-4139-9ad0-faa133eac3b2, currentPlayer=O
+[GameClient] Round ended. Winner: X
 [GameClient] Received message: MATCH_END
-[GameClient] Match ended. Winner: AI
+[GameClient] Match ended. Winner: 94722c2c-786b-4dbc-8367-900bc9d1c5ac
+[GameClient] Received message: RECORDS_SYNC
+[GameClient] Records updated: 4
