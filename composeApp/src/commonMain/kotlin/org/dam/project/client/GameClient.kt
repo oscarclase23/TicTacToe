@@ -28,7 +28,7 @@ class GameClient(
     private val scope = CoroutineScope(Dispatchers.Main)
     private val jsonParser = Json { ignoreUnknownKeys = true }
     // UI State
-    private val _uiState = MutableStateFlow<AppUiState>(AppUiState.Loading())
+    private val _uiState = MutableStateFlow<AppUiState>(AppUiState.Content(Screen.Login))
     val uiState: StateFlow<AppUiState> = _uiState.asStateFlow()
     
     // Game State
@@ -623,6 +623,11 @@ class GameClient(
         _uiState.value = AppUiState.Content(screen)
     }
     
+    /**
+     * Gets the current player Name.
+     */
+    fun getPlayerName(): String? = localPlayerName
+
     /**
      * Gets the current player ID.
      */

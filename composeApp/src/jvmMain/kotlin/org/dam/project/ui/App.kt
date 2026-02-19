@@ -14,6 +14,7 @@ import org.dam.project.client.Screen
 import org.dam.project.ui.screens.ConfigScreen
 import org.dam.project.ui.screens.ErrorScreen
 import org.dam.project.ui.screens.GameScreen
+import org.dam.project.ui.screens.LoginScreen
 import org.dam.project.ui.screens.MainMenuScreen
 import org.dam.project.ui.screens.RecordsScreen
 import org.dam.project.ui.theme.MedievalTheme
@@ -29,12 +30,10 @@ fun App() {
     
     // Create coroutine scope at composable level
     val scope = rememberCoroutineScope()
-
-    // Trigger connection on startup
-    LaunchedEffect(Unit) {
-        gameClient.connect("localhost", 5678, "Player")
-    }
     
+    // State for username to allow retries
+    var username by remember { mutableStateOf("Player") }
+
     // Observe UI state
     val uiState by gameClient.uiState.collectAsState()
     
@@ -51,6 +50,15 @@ fun App() {
                 }
                 is AppUiState.Content -> {
                     when (val screen = state.currentScreen) {
+                        is Screen.Login -> LoginScreen(
+                            gameClient = gameClient,
+                            onLogin = { name ->
+                                username = name
+                                scope.launch {
+                                    gameClient.connect("localhost", 5678, name, allowResume = true)
+                                }
+                            }
+                        )
                         is Screen.Menu -> MainMenuScreen(gameClient)
                         is Screen.Records -> RecordsScreen(gameClient)
                         is Screen.Config -> ConfigScreen(gameClient)
@@ -65,7 +73,7 @@ fun App() {
                         onRetry = {
                             // Retry connection using scope from composable level
                             scope.launch {
-                                gameClient.connect("localhost", 5678, "Player")
+                                gameClient.connect("localhost", 5678, username, allowResume = true)
                             }
                         },
                         onBack = {

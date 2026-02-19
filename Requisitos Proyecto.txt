@@ -1,0 +1,151 @@
+Proyectos: Juegos Multijugador en Red con Kotlin
+Estos proyectos tienen como objetivo consolidar los conocimientos sobre la comunicación en red utilizando Sockets TCP en Kotlin. Cada proyecto consiste en un juego con servidor central que gestiona múltiples clientes simultáneamente, con opciones de juego PVE (Player vs Environment/IA) y PVP (Player vs Player).
+
+Nota importante
+Se proponen 5 proyectos de juegos. Todos deben desarrollarse como aplicaciones Kotlin Multiplatform (KMP) con soporte para Escritorio (Windows). Cada proyecto incluye un servidor que gestiona las partidas y almacena estadísticas.
+
+Requisitos Comunes para Todos los Proyectos
+Todos los proyectos deben cumplir con los siguientes requisitos técnicos:
+
+Configuración del Servidor
+Archivo de Configuración (server.properties): El servidor debe leer la configuración de red desde un archivo que contenga:
+server.host=localhost
+server.port=5678
+max.clients=10
+
+Sistema de Records
+Almacenamiento de Records (records.json): El servidor debe mantener un archivo con las mejores puntuaciones y estadísticas:
+Mejores puntuaciones por jugador
+Partidas ganadas/perdidas
+Rachas de victorias
+Estadísticas específicas de cada juego
+Sincronización de Records: Al conectarse, los clientes deben descargar el archivo de records del servidor para mostrarlos en el menú principal
+Menú Principal del Cliente
+Todos los clientes deben incluir un menú con las siguientes opciones:
+
+Nueva Partida PVP (contra otro jugador)
+Nueva Partida PVE (contra la IA del servidor)
+Ver Records (mostrar estadísticas descargadas del servidor)
+Configuración (número de rondas, dificultad, etc.)
+Salir
+Comunicación Cliente-Servidor
+Uso de Sockets TCP para garantizar que todos los mensajes lleguen en orden
+Protocolo de comunicación basado en JSON usando kotlinx.serialization
+El servidor valida toda la lógica del juego para evitar trampas
+Manejo de múltiples clientes concurrentes usando corrutinas
+Interfaz Gráfica (Compose Multiplatform)
+Uso de Compose for Desktop para crear interfaces gráficas modernas
+Interfaz responsive adaptada para Windows Desktop
+Feedback visual claro de las acciones del jugador y del oponente
+
+
+
+Requisitos Técnicos Generales para Todos los Proyectos
+Arquitectura del Servidor
+// Ejemplo de estructura del servidor
+class GameServer(configFile: String) {
+    private val config = loadConfig(configFile) // Lee server.properties
+    private val records = RecordsManager("records.json")
+    private val clients = mutableListOf<ClientHandler>()
+    
+    fun start() {
+        val serverSocket = ServerSocket(config.port, 50, InetAddress.getByName(config.host))
+        // Aceptar clientes y gestionar concurrencia con corrutinas
+    }
+    
+    suspend fun handleClient(socket: Socket) {
+        // Gestión de cada cliente
+    }
+}
+
+Gestión de Records
+Cada servidor debe implementar:
+
+Lectura/escritura de records en formato JSON
+Actualización de records al finalizar partidas
+Envío de records a clientes cuando se conectan
+Persistencia ante caídas del servidor
+Cliente KMP
+// Código compartido entre plataformas
+expect class NetworkClient {
+    suspend fun connect(host: String, port: Int)
+    suspend fun send(message: String)
+    suspend fun receive(): String
+}
+
+// Lógica de negocio compartida
+class GameClient(private val network: NetworkClient) {
+    suspend fun downloadRecords(): Records {
+        // Descargar records del servidor
+    }
+    
+    suspend fun startGame(mode: GameMode) {
+        // Iniciar partida
+    }
+}
+
+Interfaz de Usuario
+Usar Compose Multiplatform para compartir código de UI
+Implementar navegación entre pantallas (menú, juego, records, configuración)
+Manejar estados de carga, error y éxito
+Adaptar layouts para diferentes tamaños de pantalla
+Manejo de Errores y Desconexiones
+Reconexión automática en caso de pérdida de red
+Timeout en operaciones de red
+Guardado de estado de la partida en curso
+Mensajes de error claros para el usuario 
+
+
+
+
+Proyecto 3: Tres en Raya (Tic-Tac-Toe) ❌⭕
+Plataformas: Kotlin Multiplatform (Escritorio Windows)
+
+Descripción
+Implementación del clásico juego de Tres en Raya con múltiples variantes y niveles de dificultad en la IA. Los jugadores compiten en modo PVP o PVE para conseguir alinear 3 símbolos en un tablero.
+
+Funcionalidades Específicas
+Configuración del Juego
+Tamaño del tablero: 3x3 (clásico), 4x4, 5x5
+En 4x4: gana quien alinee 4
+En 5x5: gana quien alinee 5
+Número de partidas: Mejor de 3, 5 o de 7
+Dificultad IA (PVE):
+Fácil: movimientos aleatorios
+Medio: minimax con profundidad limitada
+Difícil: minimax completo (invencible en 3x3)
+Tiempo por movimiento: 30 segundos (configurable)
+Modo Turbo: Partidas rápidas con tiempo limitado (10 segundos por turno)
+Comunicación y Red
+Configuración de Partida:
+CREATE_GAME:{"boardSize":3,"rounds":5,"difficulty":"HARD","timeLimit":30}
+Protocolo de Juego:
+MAKE_MOVE:{"position":{"row":1,"col":2}}
+MOVE_RESULT:{"player":"X","position":{"row":1,"col":2},"valid":true}
+GAME_STATE:{"board":[["X","O",""],["","X",""],["","","O"]],"nextPlayer":"X"}
+ROUND_END:{"winner":"X","winningLine":[{"row":0,"col":0},{"row":1,"col":1},{"row":2,"col":2}]}
+MATCH_END:{"winner":"Player1","score":{"player1":3,"player2":1}}
+Interfaz Gráfica
+Tablero interactivo: Cuadrícula de NxN donde hacer clic coloca tu símbolo
+Animaciones:
+Aparición de símbolos (X y O)
+Línea animada cuando hay victoria
+Tablero que se sacude en caso de empate
+Marcador de partidas: Muestra el resultado de cada ronda
+Indicador de turno: Claramente visible de quién es el turno
+Historial de movimientos: Lista de movimientos realizados con opción de deshacer (solo en modo práctica)
+Timer: Cuenta regresiva del tiempo restante para el movimiento
+Records y Estadísticas
+Partidas ganadas/perdidas/empates (PVP y PVE separados)
+Victorias por tamaño de tablero
+Récord de victorias consecutivas
+Tiempo promedio por movimiento
+Porcentaje de victorias contra cada nivel de IA
+Movimiento favorito (posición más jugada)
+
+
+
+
+
+
+

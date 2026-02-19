@@ -38,7 +38,7 @@ fun MainMenuScreen(gameClient: GameClient) {
             )
             
             Text(
-                text = "Tic-Tac-Toe",
+                text = "Welcome, ${gameClient.getPlayerName() ?: "Warrior"}",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )

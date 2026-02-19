@@ -28,6 +28,11 @@ sealed class AppUiState {
  */
 sealed class Screen {
     /**
+     * Login screen.
+     */
+    data object Login : Screen()
+
+    /**
      * Main menu screen.
      */
     data object Menu : Screen()
