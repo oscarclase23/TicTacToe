@@ -2,40 +2,66 @@
     "records": [
         {
             "playerName": "oscar",
+            "wins": 1,
             "losses": 4,
+            "currentStreak": 1,
+            "bestStreak": 1,
+            "pvpWins": 1,
             "pvpLosses": 3,
             "pveLosses": 1,
+            "winsByBoardSize": {
+                "3": 1
+            },
             "gamesVsAI": {
                 "EASY": 1
             },
-            "totalMoves": 13,
-            "totalMoveTimeSeconds": 48,
+            "totalMoves": 30,
+            "totalMoveTimeSeconds": 119,
             "favoriteMove": {
-                "row": 0,
-                "col": 1
+                "row": 2,
+                "col": 2
             },
             "moveFrequencies": {
-                "2,0": 2,
-                "2,2": 2,
-                "0,1": 3,
-                "1,0": 1,
-                "0,2": 3,
-                "0,0": 1,
-                "1,2": 1
+                "2,0": 4,
+                "2,2": 5,
+                "0,1": 5,
+                "1,0": 2,
+                "0,2": 4,
+                "0,0": 2,
+                "1,2": 3,
+                "2,1": 3,
+                "1,1": 2
             }
         },
         {
             "playerName": "david",
             "wins": 2,
-            "losses": 2,
+            "losses": 3,
             "bestStreak": 2,
             "pvpWins": 2,
+            "pvpLosses": 1,
             "pveLosses": 2,
             "winsByBoardSize": {
                 "3": 2
             },
             "gamesVsAI": {
                 "HARD": 2
+            },
+            "totalMoves": 18,
+            "totalMoveTimeSeconds": 71,
+            "favoriteMove": {
+                "row": 0,
+                "col": 0
+            },
+            "moveFrequencies": {
+                "1,1": 2,
+                "0,1": 3,
+                "0,0": 4,
+                "2,0": 1,
+                "0,2": 3,
+                "1,2": 3,
+                "2,2": 1,
+                "1,0": 1
             }
         },
         {

@@ -275,19 +275,19 @@ class GameServer(val config: ServerConfig) {
     private suspend fun checkAndTriggerAIMove(session: GameSession) {
         if (!session.isAIGame || session.game.isGameOver()) return
         val aiSymbol = if (session.playerX == "AI") "X" else "O"
-        if (session.game.getCurrentPlayer() != aiSymbol) {
-            println("[GameServer] Waiting for next player move. Current player: ${session.game.getCurrentPlayer()}")
-            return
-        }
-        println("[GameServer] AI's turn, calculating move...")
-        try {
-            delay(400)
-            val aiMove = GameAI.getBestMove(session.game, session.config.difficulty, aiSymbol)
-            processMove(session.matchId, "AI", aiMove)
-        } catch (e: Exception) {
-            println("[GameServer] ERROR: AI move failed: ${e.message}")
-            val fallback = getRandomMove(session.game)
-            if (fallback != null) processMove(session.matchId, "AI", fallback)
+        if (session.game.getCurrentPlayer() != aiSymbol) return
+
+        // Launch in background to not block the message processing loop
+        scope.launch {
+            try {
+                delay(250) // Reduced delay for better fluidity
+                val aiMove = GameAI.getBestMove(session.game, session.config.difficulty, aiSymbol)
+                processMove(session.matchId, "AI", aiMove)
+            } catch (e: Exception) {
+                println("[GameServer] ERROR: AI move failed: ${e.message}")
+                val fallback = getRandomMove(session.game)
+                if (fallback != null) processMove(session.matchId, "AI", fallback)
+            }
         }
     }
 
