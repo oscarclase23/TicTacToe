@@ -2,54 +2,54 @@
     "records": [
         {
             "playerName": "oscar",
-            "wins": 7,
-            "losses": 7,
+            "wins": 9,
+            "losses": 11,
             "draws": 1,
-            "currentStreak": 3,
-            "bestStreak": 3,
+            "bestStreak": 5,
             "pvpWins": 2,
-            "pvpLosses": 3,
-            "pveWins": 5,
-            "pveLosses": 4,
+            "pvpLosses": 4,
+            "pveWins": 7,
+            "pveLosses": 7,
             "pveDraws": 1,
             "winsByBoardSize": {
-                "3": 7
+                "3": 9
             },
             "winVsAI": {
-                "EASY": 5
+                "EASY": 7
             },
             "gamesVsAI": {
-                "EASY": 8,
-                "HARD": 2
+                "EASY": 12,
+                "HARD": 3
             },
-            "totalMoves": 107,
-            "totalMoveTimeSeconds": 232,
+            "totalMoves": 143,
+            "totalMoveTimeSeconds": 275,
             "favoriteMove": {
                 "row": 1,
                 "col": 1
             },
             "moveFrequencies": {
-                "2,0": 15,
-                "2,2": 13,
-                "0,1": 16,
-                "1,0": 7,
-                "0,2": 10,
-                "0,0": 9,
-                "1,2": 8,
-                "2,1": 11,
-                "1,1": 18
+                "2,0": 20,
+                "2,2": 15,
+                "0,1": 20,
+                "1,0": 11,
+                "0,2": 14,
+                "0,0": 14,
+                "1,2": 12,
+                "2,1": 12,
+                "1,1": 25
             }
         },
         {
             "playerName": "david",
-            "wins": 2,
+            "wins": 3,
             "losses": 4,
+            "currentStreak": 1,
             "bestStreak": 2,
-            "pvpWins": 2,
+            "pvpWins": 3,
             "pvpLosses": 2,
             "pveLosses": 2,
             "winsByBoardSize": {
-                "3": 2
+                "3": 3
             },
             "gamesVsAI": {
                 "HARD": 2

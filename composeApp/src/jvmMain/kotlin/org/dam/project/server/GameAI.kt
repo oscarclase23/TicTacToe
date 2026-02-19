@@ -274,21 +274,33 @@ object GameAI {
         }
 
         // All rows
-        for (r in 0 until size)
-            for (startC in 0..size - winLen)
-                evalLine((startC until startC + winLen).map { Position(r, it) })
+        for (r in 0 until size) {
+            for (startC in 0..size - winLen) {
+                val linePositions = (startC until startC + winLen).map { Position(r, it) }
+                evalLine(linePositions)
+            }
+        }
         // All columns
-        for (c in 0 until size)
-            for (startR in 0..size - winLen)
-                evalLine((startR until startR + winLen).map { Position(it, c) })
+        for (c in 0 until size) {
+            for (startR in 0..size - winLen) {
+                val linePositions = (startR until startR + winLen).map { Position(it, c) }
+                evalLine(linePositions)
+            }
+        }
         // Diagonals ↘
-        for (startR in 0..size - winLen)
-            for (startC in 0..size - winLen)
-                evalLine((0 until winLen).map { Position(startR + it, startC + it) })
+        for (startR in 0..size - winLen) {
+            for (startC in 0..size - winLen) {
+                val linePositions = (0 until winLen).map { Position(startR + it, startC + it) }
+                evalLine(linePositions)
+            }
+        }
         // Diagonals ↙
-        for (startR in 0..size - winLen)
-            for (startC in winLen - 1 until size)
-                evalLine((0 until winLen).map { Position(startR + it, startC - it) })
+        for (startR in 0..size - winLen) {
+            for (startC in winLen - 1 until size) {
+                val linePositions = (0 until winLen).map { Position(startR + it, startC - it) }
+                evalLine(linePositions)
+            }
+        }
 
         return score
     }
