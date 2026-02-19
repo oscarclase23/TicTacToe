@@ -25,6 +25,9 @@ class GameClient(
     private val _roundEndResult = MutableStateFlow<RoundEnd?>(null)
     val roundEndResult: StateFlow<RoundEnd?> = _roundEndResult.asStateFlow()
 
+    private val _matchEndResult = MutableStateFlow<Pair<MatchEnd, GameState>?>(null)
+    val matchEndResult: StateFlow<Pair<MatchEnd, GameState>?> = _matchEndResult.asStateFlow()
+
     private val _timeRemaining = MutableStateFlow<Int?>(null)
     val timeRemaining: StateFlow<Int?> = _timeRemaining.asStateFlow()
 
@@ -46,13 +49,13 @@ class GameClient(
     private var timerJob: Job? = null
     private var reconnectJob: Job? = null
 
+    // Flag: are we currently showing a match-end overlay? Block GAME_STATE nav during this.
+    @Volatile private var isMatchEndPending = false
+
     // For automatic reconnection
     private var lastHost: String = "localhost"
     private var lastPort: Int = 5678
     private var lastPlayerName: String = "Player"
-
-    // Time tracking per move
-    private var moveStartTime: Long = 0L
 
     suspend fun connect(host: String, port: Int, playerName: String, allowResume: Boolean = false) {
         stopMessageListener()
@@ -147,9 +150,7 @@ class GameClient(
                                 e.message?.contains("EOF", ignoreCase = true) == true
                             if (isDisconnect) {
                                 println("[GameClient] Connection lost, attempting auto-reconnect...")
-                                scope.launch(Dispatchers.Main) {
-                                    _isConnectionLost.value = true
-                                }
+                                scope.launch(Dispatchers.Main) { _isConnectionLost.value = true }
                                 startAutoReconnect()
                                 break
                             }
@@ -163,7 +164,6 @@ class GameClient(
         }
     }
 
-    /** Automatic reconnection with exponential backoff */
     private fun startAutoReconnect() {
         reconnectJob?.cancel()
         reconnectJob = scope.launch {
@@ -210,7 +210,6 @@ class GameClient(
                 }
             }
 
-            // After all retries, show error
             if (_isConnectionLost.value) {
                 _uiState.value = AppUiState.Error(
                     message = "No se pudo reconectar al servidor.",
@@ -234,22 +233,31 @@ class GameClient(
                     val gameState = jsonParser.decodeFromString<GameState>(message.payload)
                     println("[GameClient] Decoded GameState: matchId=${gameState.matchId}, currentPlayer=${gameState.currentPlayer}")
 
-                    if (_roundEndResult.value != null) _roundEndResult.value = null
-
+                    // FIX: Don't clear round-end overlay when a new GAME_STATE arrives.
+                    // The overlay has its own auto-dismiss timer. Only clear it if the round
+                    // in the new state is strictly greater (i.e. a new round actually started).
                     val previousState = _currentGameState.value
+                    val roundChanged = previousState != null && gameState.currentRound > previousState.currentRound
+
+                    if (roundChanged && _roundEndResult.value != null) {
+                        // New round started server-side, safe to clear the round overlay now
+                        _roundEndResult.value = null
+                    }
+
                     _currentGameState.value = gameState
                     currentMatchId = gameState.matchId
                     currentTimeLimit = gameState.timeLimit
                     currentPracticeMode = gameState.practiceMode
 
                     val turnChanged = previousState?.currentPlayer != gameState.currentPlayer
-                    val roundChanged = previousState?.currentRound != gameState.currentRound
                     if (previousState == null || turnChanged || roundChanged) {
-                        moveStartTime = System.currentTimeMillis()
                         startTimer()
                     }
 
                     scope.launch(Dispatchers.Main) {
+                        // Don't navigate away from the game screen if match-end overlay is showing
+                        if (isMatchEndPending) return@launch
+
                         val currentUiState = _uiState.value
                         if (currentUiState !is AppUiState.Content || currentUiState.currentScreen !is Screen.Game) {
                             println("[GameClient] Navigating to Game: ${gameState.matchId}")
@@ -268,16 +276,15 @@ class GameClient(
                     println("[GameClient] Round ended. Winner: ${roundEnd.winner}")
                     stopTimer()
                     _roundEndResult.value = roundEnd
-                    scope.launch(Dispatchers.Main) {
-                        delay(3000)
-                        _roundEndResult.value = null
-                    }
+                    // The overlay auto-dismisses via GameScreen observing roundEndResult.
+                    // We do NOT set a timer here to null it — GAME_STATE arrival handles it.
                 }
 
                 MessageType.MATCH_END -> {
                     val matchEnd = jsonParser.decodeFromString<MatchEnd>(message.payload)
                     println("[GameClient] Match ended. Winner: ${matchEnd.winner}")
                     stopTimer()
+                    isMatchEndPending = true
 
                     val currentGState = _currentGameState.value
                     if (currentGState != null) {
@@ -290,19 +297,22 @@ class GameClient(
                             matchEnd.winner == localPlayerName -> mySymbol
                             else -> opponentSymbol
                         }
+                        // Show the match-end overlay by setting roundEndResult with reason
                         _roundEndResult.value = RoundEnd(
                             winner = winnerSymbol,
                             isDraw = matchEnd.winner == "DRAW",
-                            reason = matchEnd.reason ?: "Fin de la partida"
+                            reason = "🏆 Fin del Match — ${matchEnd.reason ?: ""}"
                         )
                     }
 
                     scope.launch(Dispatchers.Main) {
-                        delay(4000)
+                        delay(4500)
+                        isMatchEndPending = false
                         _uiState.value = AppUiState.Content(Screen.Menu)
                         _currentGameState.value = null
                         currentMatchId = null
                         _roundEndResult.value = null
+                        _matchEndResult.value = null
                     }
                 }
 
@@ -364,9 +374,11 @@ class GameClient(
 
         _currentGameState.value = null
         _roundEndResult.value = null
+        _matchEndResult.value = null
         currentMatchId = null
         currentTimeLimit = timeLimit
         currentPracticeMode = practiceMode
+        isMatchEndPending = false
 
         try {
             network.send(NetworkMessage(
@@ -400,15 +412,35 @@ class GameClient(
         ))
     }
 
-    suspend fun joinQueue(preferredBoardSize: Int = 3, timeLimit: Int = 30, totalRounds: Int = 3) {
+    suspend fun joinQueue(
+        preferredBoardSize: Int = 3,
+        timeLimit: Int = 30,
+        totalRounds: Int = 3,
+        turboMode: Boolean = false
+    ) {
         if (!network.isConnected()) {
             _uiState.value = AppUiState.Error("No conectado al servidor.", false)
             return
         }
         val player = playerId ?: return
+
+        // Reset state before joining queue
+        _currentGameState.value = null
+        _roundEndResult.value = null
+        _matchEndResult.value = null
+        isMatchEndPending = false
+
         network.send(NetworkMessage(
             type = MessageType.JOIN_QUEUE,
-            payload = jsonParser.encodeToString(JoinQueueRequest(player, preferredBoardSize, timeLimit, totalRounds))
+            payload = jsonParser.encodeToString(
+                JoinQueueRequest(
+                    playerName = player,
+                    preferredBoardSize = preferredBoardSize,
+                    timeLimit = if (turboMode) 10 else timeLimit,
+                    totalRounds = totalRounds,
+                    turboMode = turboMode
+                )
+            )
         ))
         _uiState.value = AppUiState.Content(Screen.WaitingForMatch)
     }
@@ -461,6 +493,7 @@ class GameClient(
         _currentGameState.value = null
         _isConnectionLost.value = false
         _isOpponentDisconnected.value = false
+        isMatchEndPending = false
         _uiState.value = AppUiState.Content(Screen.Menu)
     }
 }

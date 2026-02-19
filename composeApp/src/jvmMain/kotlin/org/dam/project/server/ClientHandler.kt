@@ -60,7 +60,7 @@ class ClientHandler(
             MessageType.JOIN_QUEUE -> handleJoinQueue(message.payload)
             MessageType.CANCEL_QUEUE -> handleCancelQueue()
             MessageType.LEAVE_GAME -> handleLeaveGame()
-            MessageType.SURRENDER -> handleSurrender()  // FIX: was missing, fell to else branch
+            MessageType.SURRENDER -> handleSurrender()
             MessageType.DISCONNECT -> close()
             else -> sendError("UNKNOWN_MESSAGE", "Unknown message type: ${message.type}")
         }
@@ -101,8 +101,12 @@ class ClientHandler(
                     println("[ClientHandler] AI goes first, triggering initial AI move")
                     CoroutineScope(Dispatchers.IO).launch {
                         delay(500)
-                        val aiMove = GameAI.getBestMove(session.game, session.config.difficulty, "X")
-                        server.processMove(matchId, "AI", aiMove)
+                        // Safety check: session must still exist and not be finished
+                        val currentSession = server.getSession(matchId)
+                        if (currentSession != null && !currentSession.isFinished) {
+                            val aiMove = GameAI.getBestMove(currentSession.game, currentSession.config.difficulty, "X")
+                            server.processMove(matchId, "AI", aiMove)
+                        }
                     }
                 }
             }
@@ -126,7 +130,9 @@ class ClientHandler(
         try {
             val request = json.decodeFromString<JoinQueueRequest>(payload)
             val pid = playerId ?: run { sendError("NOT_CONNECTED", "Not connected"); return }
-            server.queuePlayer(pid, request.preferredBoardSize, request.timeLimit, request.totalRounds)
+            // Pass turboMode: if timeLimit == 10, it's turbo
+            val isTurbo = request.timeLimit <= 10
+            server.queuePlayer(pid, request.preferredBoardSize, request.timeLimit, request.totalRounds, isTurbo)
         } catch (e: Exception) {
             println("[ClientHandler] Error joining queue: ${e.message}")
         }

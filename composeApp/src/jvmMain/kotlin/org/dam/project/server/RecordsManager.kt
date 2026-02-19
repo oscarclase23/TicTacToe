@@ -13,6 +13,9 @@ import kotlin.concurrent.write
 
 /**
  * Thread-safe manager for player records persistence.
+ *
+ * FIX: winVsAI and gamesVsAI now use Map<String, Int> to avoid
+ * kotlinx.serialization issues with enum keys in maps.
  */
 class RecordsManager(private val filePath: String = "records.json") {
 
@@ -42,34 +45,19 @@ class RecordsManager(private val filePath: String = "records.json") {
         loserMoves: List<Position> = emptyList(),
         durationSeconds: Long = 0
     ) = lock.write {
-        if (!isDraw && winner != "AI") {
-            updatePlayerStats(
-                playerName = winner,
-                isWinner = true,
-                isDraw = false,
-                isPVE = isPVE,
-                opponentDifficulty = difficulty,
-                boardSize = boardSize,
-                moves = winnerMoves,
-                duration = durationSeconds
-            )
-        }
+        val totalMoves = winnerMoves.size + loserMoves.size
+        // Approximate time per player: split total duration proportionally by moves
+        val winnerTime = if (totalMoves > 0 && winnerMoves.isNotEmpty())
+            (durationSeconds * winnerMoves.size / totalMoves) else durationSeconds / 2
+        val loserTime = if (totalMoves > 0 && loserMoves.isNotEmpty())
+            (durationSeconds * loserMoves.size / totalMoves) else durationSeconds / 2
+
         if (isDraw) {
-            if (winner != "AI") updatePlayerStats(winner, false, true, isPVE, difficulty, boardSize, winnerMoves, durationSeconds)
-            if (loser != "AI") updatePlayerStats(loser, false, true, isPVE, difficulty, boardSize, loserMoves, durationSeconds)
+            if (winner != "AI") updatePlayerStats(winner, false, true, isPVE, difficulty, boardSize, winnerMoves, winnerTime)
+            if (loser != "AI") updatePlayerStats(loser, false, true, isPVE, difficulty, boardSize, loserMoves, loserTime)
         } else {
-            if (loser != "AI") {
-                updatePlayerStats(
-                    playerName = loser,
-                    isWinner = false,
-                    isDraw = false,
-                    isPVE = isPVE,
-                    opponentDifficulty = difficulty,
-                    boardSize = boardSize,
-                    moves = loserMoves,
-                    duration = durationSeconds
-                )
-            }
+            if (winner != "AI") updatePlayerStats(winner, true, false, isPVE, difficulty, boardSize, winnerMoves, winnerTime)
+            if (loser != "AI") updatePlayerStats(loser, false, false, isPVE, difficulty, boardSize, loserMoves, loserTime)
         }
 
         save()
@@ -84,7 +72,7 @@ class RecordsManager(private val filePath: String = "records.json") {
         opponentDifficulty: Difficulty?,
         boardSize: Int,
         moves: List<Position>,
-        duration: Long
+        playerTimeSeconds: Long
     ) {
         if (playerName == "AI") return
 
@@ -94,36 +82,39 @@ class RecordsManager(private val filePath: String = "records.json") {
         val newWins = current.wins + if (isWinner) 1 else 0
         val newLosses = current.losses + if (!isWinner && !isDraw) 1 else 0
         val newDraws = current.draws + if (isDraw) 1 else 0
+
+        // FIX: currentStreak resets to 0 on loss or draw, increments only on win
         val newCurrentStreak = if (isWinner) current.currentStreak + 1 else 0
         val newBestStreak = maxOf(current.bestStreak, newCurrentStreak)
 
         // PVP/PVE stats
-        val newPvpWins    = current.pvpWins    + if (!isPVE && isWinner) 1 else 0
-        val newPvpLosses  = current.pvpLosses  + if (!isPVE && !isWinner && !isDraw) 1 else 0
-        val newPvpDraws   = current.pvpDraws   + if (!isPVE && isDraw) 1 else 0
-        val newPveWins    = current.pveWins    + if (isPVE && isWinner) 1 else 0
-        val newPveLosses  = current.pveLosses  + if (isPVE && !isWinner && !isDraw) 1 else 0
-        val newPveDraws   = current.pveDraws   + if (isPVE && isDraw) 1 else 0
+        val newPvpWins   = current.pvpWins   + if (!isPVE && isWinner) 1 else 0
+        val newPvpLosses = current.pvpLosses + if (!isPVE && !isWinner && !isDraw) 1 else 0
+        val newPvpDraws  = current.pvpDraws  + if (!isPVE && isDraw) 1 else 0
+        val newPveWins   = current.pveWins   + if (isPVE && isWinner) 1 else 0
+        val newPveLosses = current.pveLosses + if (isPVE && !isWinner && !isDraw) 1 else 0
+        val newPveDraws  = current.pveDraws  + if (isPVE && isDraw) 1 else 0
 
-        // Time tracking - stored as total seconds for ALL moves combined
-        // avgTimePerMove = totalMoveTimeSeconds / totalMoves
+        // Time tracking: accumulate actual player time and move count
         val newTotalMoves = current.totalMoves + moves.size
-        val newTotalMoveTime = current.totalMoveTimeSeconds + duration  // duration = total seconds for this match
+        val newTotalMoveTime = current.totalMoveTimeSeconds + playerTimeSeconds
 
         // Wins by board size
         val newWinsByBoardSize = current.winsByBoardSize.toMutableMap()
         if (isWinner) newWinsByBoardSize[boardSize] = (newWinsByBoardSize[boardSize] ?: 0) + 1
 
-        // Wins vs AI by difficulty
+        // Wins vs AI by difficulty — String keys to avoid enum serialization issues
         val newWinVsAI = current.winVsAI.toMutableMap()
         if (isWinner && isPVE && opponentDifficulty != null) {
-            newWinVsAI[opponentDifficulty] = (newWinVsAI[opponentDifficulty] ?: 0) + 1
+            val key = opponentDifficulty.name
+            newWinVsAI[key] = (newWinVsAI[key] ?: 0) + 1
         }
 
-        // Games played vs AI by difficulty (to compute percentage)
+        // Games played vs AI by difficulty
         val newGamesVsAI = current.gamesVsAI.toMutableMap()
         if (isPVE && opponentDifficulty != null) {
-            newGamesVsAI[opponentDifficulty] = (newGamesVsAI[opponentDifficulty] ?: 0) + 1
+            val key = opponentDifficulty.name
+            newGamesVsAI[key] = (newGamesVsAI[key] ?: 0) + 1
         }
 
         // Move frequencies and favorite move

@@ -40,7 +40,7 @@ class GameServer(val config: ServerConfig) {
                 session.game.setCurrentPlayer(data.currentPlayer)
                 activeGames[data.matchId] = session
                 restored++
-                startSessionTimer(session)
+                // Don't start timers for restored games — players need to reconnect first
             } catch (e: Exception) {
                 println("[GameServer] Failed to restore session ${data.matchId}: ${e.message}")
             }
@@ -89,13 +89,15 @@ class GameServer(val config: ServerConfig) {
         scope.cancel()
         serverSocket?.close()
         clients.values.forEach { it.close() }
+        // Stop all active session timers/AI jobs
+        activeGames.values.forEach { it.stopAll() }
         println("[GameServer] Stopped")
     }
 
     fun registerClient(handler: ClientHandler, playerName: String, previousPlayerId: String? = null): String {
         if (previousPlayerId != null) {
             val existingGame = activeGames.values.find {
-                it.playerX == previousPlayerId || it.playerO == previousPlayerId
+                !it.isFinished && (it.playerX == previousPlayerId || it.playerO == previousPlayerId)
             }
             if (existingGame != null) {
                 println("[GameServer] Resuming session for $previousPlayerId (${existingGame.matchId})")
@@ -109,6 +111,8 @@ class GameServer(val config: ServerConfig) {
                     handler.sendMessage(MessageType.GAME_STATE, json.encodeToString(existingGame.getGameState()))
                     val opponentId = if (existingGame.playerX == previousPlayerId) existingGame.playerO else existingGame.playerX
                     if (opponentId != "AI") clients[opponentId]?.sendMessage(MessageType.OPPONENT_RECONNECTED, "")
+                    // Restart timer after reconnect
+                    startSessionTimer(existingGame)
                 }
                 return previousPlayerId
             }
@@ -127,6 +131,7 @@ class GameServer(val config: ServerConfig) {
 
     fun handlePlayerDisconnect(playerId: String) {
         val session = activeGames.values.find { it.playerX == playerId || it.playerO == playerId } ?: return
+        if (session.isFinished) return
         println("[GameServer] Player $playerId disconnected from game ${session.matchId}")
         session.setPlayerConnected(playerId, false)
         if (session.isAIGame) {
@@ -141,7 +146,13 @@ class GameServer(val config: ServerConfig) {
 
     fun processSurrender(matchId: String, playerId: String) {
         val session = activeGames[matchId] ?: return
+        if (session.isFinished) return
+
         println("[GameServer] Player $playerId SURRENDERED game $matchId")
+
+        // Mark finished FIRST to prevent race conditions
+        session.stopAll()
+
         val opponentId = if (session.playerX == playerId) session.playerO else session.playerX
         val opponentName = getPlayerName(opponentId)
         val matchEnd = MatchEnd(
@@ -155,10 +166,8 @@ class GameServer(val config: ServerConfig) {
             isDraw = false, isPVE = session.isAIGame,
             boardSize = session.config.boardSize, difficulty = session.config.difficulty
         )
-        // Sync records to ALL connected clients
         broadcastAll(MessageType.RECORDS_SYNC, json.encodeToString(records.getSyncData()))
-        
-        session.stopTimer()
+
         activeGames.remove(matchId)
         persistenceManager.save(activeGames)
     }
@@ -182,6 +191,8 @@ class GameServer(val config: ServerConfig) {
 
     suspend fun processUndo(matchId: String, playerId: String) {
         val session = activeGames[matchId] ?: return
+        if (session.isFinished) return
+
         val result = session.handleUndo(playerId)
         if (result.success) {
             println("[GameServer] Undo successful for $playerId")
@@ -199,8 +210,15 @@ class GameServer(val config: ServerConfig) {
 
     suspend fun processMove(matchId: String, playerId: String, position: Position) {
         println("[GameServer] Processing move: matchId=$matchId, playerId=$playerId, position=(${position.row},${position.col})")
-        val session = activeGames[matchId] ?: run {
-            println("[GameServer] Game not found: $matchId")
+
+        // CRITICAL: Check session exists and is not finished BEFORE doing anything
+        val session = activeGames[matchId]
+        if (session == null) {
+            println("[GameServer] Game not found or already finished: $matchId")
+            return
+        }
+        if (session.isFinished) {
+            println("[GameServer] Ignoring move on finished session: $matchId")
             return
         }
 
@@ -214,6 +232,7 @@ class GameServer(val config: ServerConfig) {
             return
         }
 
+        // Stop timer immediately after a valid move
         session.stopTimer()
 
         val gameState = session.getGameState()
@@ -226,11 +245,20 @@ class GameServer(val config: ServerConfig) {
             println("[GameServer] Round ended: winner=${roundEnd.winner}")
             broadcastToGame(matchId, MessageType.ROUND_END, json.encodeToString(roundEnd))
 
+            // Check match end immediately after round end
             val matchEnd = session.checkMatchEnd()
             if (matchEnd != null) {
                 handleMatchEnd(session, matchEnd)
             } else {
-                delay(2000)
+                // Small delay for the round-end overlay to show, then next round
+                delay(3000)
+
+                // Re-check: session might have been removed during the delay (e.g., surrender)
+                if (!activeGames.containsKey(matchId) || session.isFinished) {
+                    println("[GameServer] Session $matchId ended during round transition, aborting")
+                    return
+                }
+
                 session.nextRound()
                 broadcastToGame(matchId, MessageType.GAME_STATE, json.encodeToString(session.getGameState()))
                 checkAndTriggerAIMove(session)
@@ -243,8 +271,13 @@ class GameServer(val config: ServerConfig) {
     }
 
     private suspend fun handleMatchEnd(session: GameSession, matchEnd: MatchEnd) {
+        val matchId = session.matchId
         println("[GameServer] Match ended: winner=${matchEnd.winner}")
-        broadcastToGame(session.matchId, MessageType.MATCH_END, json.encodeToString(matchEnd))
+
+        // Mark session as finished BEFORE broadcasting to prevent any further moves
+        session.stopAll()
+
+        broadcastToGame(matchId, MessageType.MATCH_END, json.encodeToString(matchEnd))
 
         val isDraw = matchEnd.winner == "DRAW"
         val winnerId = if (isDraw) session.playerX else matchEnd.winner
@@ -268,25 +301,62 @@ class GameServer(val config: ServerConfig) {
         // Sync records to ALL connected clients
         broadcastAll(MessageType.RECORDS_SYNC, json.encodeToString(records.getSyncData()))
 
-        activeGames.remove(session.matchId)
+        activeGames.remove(matchId)
         persistenceManager.save(activeGames)
     }
 
     private suspend fun checkAndTriggerAIMove(session: GameSession) {
-        if (!session.isAIGame || session.game.isGameOver()) return
+        // Guard: don't trigger AI if session is done or it's not an AI game
+        if (!session.isAIGame || session.isFinished || session.game.isGameOver()) return
+
         val aiSymbol = if (session.playerX == "AI") "X" else "O"
         if (session.game.getCurrentPlayer() != aiSymbol) return
 
-        // Launch in background to not block the message processing loop
-        scope.launch {
+        val matchId = session.matchId
+
+        // Cancel any previously pending AI job for this session
+        session.pendingAIJob?.cancel()
+
+        // Launch AI move in background, but track the job so it can be cancelled
+        session.pendingAIJob = scope.launch {
             try {
-                delay(250) // Reduced delay for better fluidity
-                val aiMove = GameAI.getBestMove(session.game, session.config.difficulty, aiSymbol)
-                processMove(session.matchId, "AI", aiMove)
+                delay(400) // Small delay for UI feel
+
+                // Re-check everything after the delay — state may have changed
+                val currentSession = activeGames[matchId]
+                if (currentSession == null || currentSession.isFinished || currentSession.game.isGameOver()) {
+                    println("[GameServer] AI move cancelled: session $matchId no longer valid")
+                    return@launch
+                }
+                if (currentSession.game.getCurrentPlayer() != aiSymbol) {
+                    println("[GameServer] AI move cancelled: no longer AI's turn in $matchId")
+                    return@launch
+                }
+
+                val aiMove = GameAI.getBestMove(currentSession.game, currentSession.config.difficulty, aiSymbol)
+
+                // Final check before processing
+                if (!activeGames.containsKey(matchId) || currentSession.isFinished) {
+                    println("[GameServer] AI move cancelled at last check: $matchId")
+                    return@launch
+                }
+
+                println("[GameServer] AI ($aiSymbol) plays: (${aiMove.row}, ${aiMove.col})")
+                processMove(matchId, "AI", aiMove)
+
+            } catch (e: CancellationException) {
+                println("[GameServer] AI move job cancelled for $matchId")
             } catch (e: Exception) {
-                println("[GameServer] ERROR: AI move failed: ${e.message}")
-                val fallback = getRandomMove(session.game)
-                if (fallback != null) processMove(session.matchId, "AI", fallback)
+                println("[GameServer] ERROR: AI move failed for $matchId: ${e.message}")
+                // Fallback: try a random move if AI logic crashes
+                val currentSession = activeGames[matchId]
+                if (currentSession != null && !currentSession.isFinished) {
+                    val fallback = getRandomMove(currentSession.game)
+                    if (fallback != null) {
+                        try { processMove(matchId, "AI", fallback) }
+                        catch (ex: Exception) { println("[GameServer] Fallback AI move also failed: ${ex.message}") }
+                    }
+                }
             }
         }
     }
@@ -301,7 +371,12 @@ class GameServer(val config: ServerConfig) {
 
     private fun handleTimeout(matchId: String) {
         scope.launch {
-            val session = activeGames[matchId] ?: return@launch
+            val session = activeGames[matchId]
+            if (session == null || session.isFinished) {
+                println("[GameServer] Timeout ignored: session $matchId already finished")
+                return@launch
+            }
+
             println("[GameServer] Timeout for match $matchId")
 
             val currentPlayer = session.game.getCurrentPlayer()
@@ -318,7 +393,10 @@ class GameServer(val config: ServerConfig) {
             if (matchEnd != null) {
                 handleMatchEnd(session, matchEnd)
             } else {
-                delay(2000)
+                delay(3000)
+
+                if (!activeGames.containsKey(matchId) || session.isFinished) return@launch
+
                 session.nextRound()
                 broadcastToGame(matchId, MessageType.GAME_STATE, json.encodeToString(session.getGameState()))
                 checkAndTriggerAIMove(session)
@@ -328,6 +406,8 @@ class GameServer(val config: ServerConfig) {
     }
 
     private fun startSessionTimer(session: GameSession) {
+        if (session.isFinished) return
+
         if (session.isAIGame) {
             val currentPlayerId = session.getPlayerId(session.game.getCurrentPlayer())
             if (currentPlayerId == "AI") {
@@ -355,16 +435,19 @@ class GameServer(val config: ServerConfig) {
 
     private val waitingQueues = ConcurrentHashMap<Int, java.util.concurrent.ConcurrentLinkedQueue<QueueEntry>>()
 
-    private data class QueueEntry(
-        val playerId: String, val timeLimit: Int, val totalRounds: Int,
+    data class QueueEntry(
+        val playerId: String,
+        val timeLimit: Int,
+        val totalRounds: Int,
+        val turboMode: Boolean = false,
         val timestamp: Long = System.currentTimeMillis()
     )
 
-    fun queuePlayer(playerId: String, boardSize: Int, timeLimit: Int, totalRounds: Int) {
+    fun queuePlayer(playerId: String, boardSize: Int, timeLimit: Int, totalRounds: Int, turboMode: Boolean = false) { // turboMode explicit
         cancelQueue(playerId)
         val queue = waitingQueues.getOrPut(boardSize) { java.util.concurrent.ConcurrentLinkedQueue() }
-        queue.add(QueueEntry(playerId, timeLimit, totalRounds))
-        println("[GameServer] Player $playerId queued for ${boardSize}x$boardSize. Queue size: ${queue.size}")
+        queue.add(QueueEntry(playerId, timeLimit, totalRounds, turboMode))
+        println("[GameServer] Player $playerId queued for ${boardSize}x$boardSize (time=$timeLimit, rounds=$totalRounds, turbo=$turboMode). Queue size: ${queue.size}")
         checkQueue(boardSize)
     }
 
@@ -387,13 +470,25 @@ class GameServer(val config: ServerConfig) {
         val matchId = UUID.randomUUID().toString()
         println("[GameServer] Creating PVP match: $matchId between ${e1.playerId} and ${e2.playerId}")
 
-        val finalTimeLimit = (e1.timeLimit + e2.timeLimit) / 2
-        val finalRounds = (e1.totalRounds + e2.totalRounds) / 2
+        // Negotiate time limit: average, but if either chose turbo → use turbo (10s)
+        val finalTimeLimit = when {
+            e1.turboMode || e2.turboMode -> 10
+            else -> (e1.timeLimit + e2.timeLimit) / 2
+        }
+
+        // Negotiate rounds: average, rounded to nearest valid odd value (3, 5, 7)
+        val rawAvgRounds = (e1.totalRounds + e2.totalRounds) / 2
+        val finalRounds = nearestValidRounds(rawAvgRounds)
+
+        println("[GameServer] Negotiated: timeLimit=$finalTimeLimit, rounds=$finalRounds (from ${e1.timeLimit}/${e2.timeLimit}, ${e1.totalRounds}/${e2.totalRounds})")
 
         val config = GameConfig(
-            boardSize = boardSize, winLength = boardSize,
-            totalRounds = finalRounds, difficulty = Difficulty.MEDIUM,
-            timeLimit = finalTimeLimit
+            boardSize = boardSize,
+            winLength = boardSize,
+            totalRounds = finalRounds,
+            difficulty = Difficulty.MEDIUM,
+            timeLimit = finalTimeLimit,
+            turboMode = e1.turboMode || e2.turboMode
         )
 
         val p1Starts = kotlin.random.Random.nextBoolean()
@@ -417,6 +512,19 @@ class GameServer(val config: ServerConfig) {
             broadcastToGame(matchId, MessageType.GAME_STATE, json.encodeToString(session.getGameState()))
             startSessionTimer(session)
         }
+    }
+
+    /**
+     * Rounds a value to the nearest valid "best of" option: 3, 5, or 7.
+     * Examples: 4 → 3 or 5 (equidistant → picks lower, i.e. 3)... actually we pick 5 as midpoint.
+     *   avg(3,5)=4 → 3 (closer to 3? No, equidistant. Pick 5 as tiebreak for longer games)
+     *   avg(3,7)=5 → 5 ✓
+     *   avg(5,7)=6 → 7 (closer to 7)
+     *   avg(3,3)=3 → 3 ✓
+     */
+    private fun nearestValidRounds(value: Int): Int {
+        val valid = listOf(3, 5, 7)
+        return valid.minByOrNull { kotlin.math.abs(it - value) } ?: 5
     }
 }
 

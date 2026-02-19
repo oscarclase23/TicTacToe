@@ -24,8 +24,15 @@ class GameSession(
 
     // Timer
     private var timerJob: Job? = null
-    private val scope = CoroutineScope(Dispatchers.Default)
+    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private var turnId: Long = 0
+
+    // AI job tracking — so we can cancel a pending AI move if the session ends
+    var pendingAIJob: Job? = null
+
+    // Flag to prevent processing moves on a finished/cancelled session
+    @Volatile
+    var isFinished: Boolean = false
 
     fun startTurnTimer(onTimeout: suspend () -> Unit) {
         stopTimer()
@@ -33,7 +40,8 @@ class GameSession(
         timerJob = scope.launch {
             try {
                 delay(config.timeLimit * 1000L)
-                if (isActive && turnId == currentTurnId) {
+                // Double-check: only fire if session is still alive and turn hasn't changed
+                if (isActive && !isFinished && turnId == currentTurnId) {
                     onTimeout()
                 }
             } catch (_: CancellationException) {}
@@ -45,8 +53,21 @@ class GameSession(
         timerJob = null
     }
 
+    fun stopAll() {
+        isFinished = true
+        stopTimer()
+        pendingAIJob?.cancel()
+        pendingAIJob = null
+        scope.cancel()
+    }
+
     fun makeMove(playerId: String, position: Position): MoveResult {
         synchronized(this) {
+            // Reject moves on finished sessions immediately
+            if (isFinished) {
+                return MoveResult("", position, false, "Game already finished")
+            }
+
             val playerSymbol = when (playerId) {
                 playerX -> "X"
                 playerO -> "O"
@@ -105,10 +126,43 @@ class GameSession(
         return null
     }
 
+    /**
+     * Checks if the match is over.
+     *
+     * FIX: Uses "mathematical impossibility" logic instead of just checking round count.
+     * A match ends when:
+     *   1. All rounds have been played, OR
+     *   2. One player has already won the majority and it's mathematically impossible
+     *      for the other player to win (even if they win every remaining round).
+     *
+     * Example - Best of 5 (need 3 wins):
+     *   - Score 3-0 after round 3 → Player X wins, no need to play rounds 4 and 5.
+     *   - Score 2-2 after round 4 → Must play round 5.
+     *   - Score 3-1 after round 4 → Player X wins, no need to play round 5.
+     */
     fun checkMatchEnd(): MatchEnd? {
+        val xScore = scores[playerX] ?: 0
+        val oScore = scores[playerO] ?: 0
+        val roundsPlayed = currentRound - 1  // currentRound is incremented AFTER nextRound(), so -1 for played count
+        val roundsRemaining = config.totalRounds - roundsPlayed
+        val winsNeeded = (config.totalRounds / 2) + 1  // Majority: 2 for BO3, 3 for BO5, 4 for BO7
+
+        // Case 1: One player has already secured the majority (can't be caught)
+        if (xScore >= winsNeeded) {
+            return MatchEnd(
+                winner = playerX,
+                score = mapOf(playerX to xScore, playerO to oScore)
+            )
+        }
+        if (oScore >= winsNeeded) {
+            return MatchEnd(
+                winner = playerO,
+                score = mapOf(playerX to xScore, playerO to oScore)
+            )
+        }
+
+        // Case 2: All rounds played (draw or tie)
         if (currentRound > config.totalRounds) {
-            val xScore = scores[playerX] ?: 0
-            val oScore = scores[playerO] ?: 0
             val winner = when {
                 xScore > oScore -> playerX
                 oScore > xScore -> playerO
@@ -116,6 +170,7 @@ class GameSession(
             }
             return MatchEnd(winner = winner, score = mapOf(playerX to xScore, playerO to oScore))
         }
+
         return null
     }
 

@@ -18,7 +18,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.dam.project.client.GameClient
 import org.dam.project.client.Screen
-import org.dam.project.network.Difficulty
 import org.dam.project.network.PlayerRecord
 import org.dam.project.ui.GameAssets
 import org.jetbrains.compose.resources.painterResource
@@ -82,11 +81,10 @@ private fun RecordCard(rank: Int, record: PlayerRecord) {
     val totalGames = record.wins + record.losses + record.draws
     val winRate = if (totalGames > 0) (record.wins.toFloat() / totalGames * 100).toInt() else 0
 
-    // Rank color
     val rankColor = when (rank) {
-        1 -> Color(0xFFFFD700)  // Gold
-        2 -> Color(0xFFC0C0C0)  // Silver
-        3 -> Color(0xFFCD7F32)  // Bronze
+        1 -> Color(0xFFFFD700)
+        2 -> Color(0xFFC0C0C0)
+        3 -> Color(0xFFCD7F32)
         else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
     }
 
@@ -104,7 +102,6 @@ private fun RecordCard(rank: Int, record: PlayerRecord) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Rank badge
                 Box(
                     modifier = Modifier
                         .size(40.dp)
@@ -136,7 +133,6 @@ private fun RecordCard(rank: Int, record: PlayerRecord) {
                     )
                 }
 
-                // Win rate circle
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
                         text = "$winRate%",
@@ -210,21 +206,17 @@ private fun RecordCard(rank: Int, record: PlayerRecord) {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // ── % Victorias vs IA por dificultad ───────────────────
+                // FIX: Use String keys ("EASY", "MEDIUM", "HARD") matching new PlayerRecord
                 if (record.gamesVsAI.isNotEmpty()) {
                     SectionTitle("Porcentaje de victorias vs IA")
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        listOf(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD).forEach { diff ->
-                            val gamesPlayed = record.gamesVsAI[diff] ?: 0
-                            val winsVsDiff = record.winVsAI[diff] ?: 0
+                        listOf("EASY" to "Fácil", "MEDIUM" to "Medio", "HARD" to "Difícil").forEach { (key, label) ->
+                            val gamesPlayed = record.gamesVsAI[key] ?: 0
+                            val winsVsDiff = record.winVsAI[key] ?: 0
                             val pct = if (gamesPlayed > 0) (winsVsDiff * 100 / gamesPlayed) else 0
-                            val label = when (diff) {
-                                Difficulty.EASY -> "Fácil"
-                                Difficulty.MEDIUM -> "Medio"
-                                Difficulty.HARD -> "Difícil"
-                            }
                             AiWinCard(
                                 modifier = Modifier.weight(1f),
                                 label = label,
@@ -342,7 +334,6 @@ private fun AiWinCard(modifier: Modifier, label: String, wins: Int, games: Int, 
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
             Spacer(modifier = Modifier.height(4.dp))
-            // Progress bar
             Box(
                 modifier = Modifier
                     .fillMaxWidth()

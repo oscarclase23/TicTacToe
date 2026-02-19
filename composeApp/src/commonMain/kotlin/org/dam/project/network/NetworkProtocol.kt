@@ -31,7 +31,8 @@ data class JoinQueueRequest(
     val playerName: String,
     val preferredBoardSize: Int = 3,
     val timeLimit: Int = 30,
-    val totalRounds: Int = 3
+    val totalRounds: Int = 3,
+    val turboMode: Boolean = false   // NEW: explicit turbo flag from client
 )
 
 @Serializable
@@ -92,7 +93,7 @@ data class GameState(
     val playerOId: String,
     val timeLimit: Int = 30,
     val practiceMode: Boolean = false,
-    val movesLog: List<String> = emptyList() // Historial legible para UI
+    val movesLog: List<String> = emptyList()
 )
 
 @Serializable
@@ -115,6 +116,9 @@ data class MatchEnd(
  * - totalMoveTimeSeconds: suma total de segundos de TODOS los movimientos
  * - avgTimePerMove se calcula como totalMoveTimeSeconds / totalMoves
  * - gamesVsAI: partidas jugadas vs cada dificultad (para calcular % victorias)
+ *
+ * NOTE: winVsAI and gamesVsAI use String keys (not Difficulty enum) to avoid
+ * kotlinx.serialization issues with enum map keys.
  */
 @Serializable
 data class PlayerRecord(
@@ -133,15 +137,15 @@ data class PlayerRecord(
     val pveWins: Int = 0,
     val pveLosses: Int = 0,
     val pveDraws: Int = 0,
-    // Board size wins
+    // Board size wins — key is boardSize as Int
     val winsByBoardSize: Map<Int, Int> = emptyMap(),
-    // Wins vs AI difficulty
-    val winVsAI: Map<Difficulty, Int> = emptyMap(),
-    // Games played vs AI difficulty (for win percentage calculation)
-    val gamesVsAI: Map<Difficulty, Int> = emptyMap(),
+    // Wins vs AI difficulty — key is difficulty name string (e.g. "EASY")
+    val winVsAI: Map<String, Int> = emptyMap(),
+    // Games played vs AI difficulty — key is difficulty name string
+    val gamesVsAI: Map<String, Int> = emptyMap(),
     // Move metrics
     val totalMoves: Int = 0,
-    val totalMoveTimeSeconds: Long = 0L,   // renamed from totalTimeSeconds
+    val totalMoveTimeSeconds: Long = 0L,
     // Favorite position
     val favoriteMove: Position? = null,
     val moveFrequencies: Map<String, Int> = emptyMap()
