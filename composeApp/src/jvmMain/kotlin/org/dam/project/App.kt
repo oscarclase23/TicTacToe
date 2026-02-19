@@ -25,17 +25,19 @@ import org.dam.project.ui.theme.MedievalTheme
 /**
  * Root composable for the application.
  *
- * THE BUG: connect() was launched from rememberCoroutineScope() inside LoginScreen.
- * When connect() changes uiState to Loading, Screen.Login leaves composition,
- * which cancels LoginScreen's scope, killing the connect() coroutine mid-handshake.
+ * BUG RAÍZ: El App.kt original usaba rememberCoroutineScope() para lanzar connect().
+ * Cuando connect() cambia el estado a Loading, Screen.Login sale de la composición,
+ * lo cual cancela el scope de rememberCoroutineScope() -> ForgottenCoroutineScopeException.
  *
- * THE FIX: Use a stable CoroutineScope created with remember{} (NOT rememberCoroutineScope).
- * Pass a plain (String)->Unit lambda to LoginScreen so it never needs its own
- * coroutine scope for connecting.
+ * SOLUCIÓN: appScope usa remember { CoroutineScope(...) } en lugar de rememberCoroutineScope().
+ * Este scope NO está ligado al ciclo de vida de ningún Composable y nunca se cancela
+ * por recomposición. Se cancela manualmente en DisposableEffect.onDispose.
  */
 @Composable
 fun App() {
-    // Stable scope - lives as long as App composable, NOT cancelled on recomposition.
+    // *** CLAVE: remember{CoroutineScope} es DISTINTO de rememberCoroutineScope() ***
+    // rememberCoroutineScope() -> se cancela cuando el composable sale de la composición
+    // remember{CoroutineScope} -> vive mientras App() esté en la composición (toda la app)
     val appScope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Main) }
 
     val gameClient = remember {
@@ -57,8 +59,8 @@ fun App() {
                     when (val screen = state.currentScreen) {
                         is Screen.Login -> LoginScreen(
                             gameClient = gameClient,
-                            // Plain lambda - NOT suspend. Launches in stable appScope.
-                            // LoginScreen does NOT need its own scope for connecting.
+                            // onLogin es (String)->Unit normal, NO suspend.
+                            // Lanza connect() en appScope que sobrevive la recomposición.
                             onLogin = { name ->
                                 username = name
                                 appScope.launch {
@@ -89,7 +91,10 @@ fun App() {
     }
 
     DisposableEffect(Unit) {
-        onDispose { gameClient.cleanup() }
+        onDispose {
+            gameClient.cleanup()
+            appScope.coroutineContext[kotlinx.coroutines.Job]?.cancel()
+        }
     }
 }
 
