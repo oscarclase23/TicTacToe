@@ -13,27 +13,23 @@ import kotlin.concurrent.write
 
 /**
  * Thread-safe manager for player records persistence.
- * Automatically loads and saves records to a JSON file.
  */
 class RecordsManager(private val filePath: String = "records.json") {
-    
+
     private val json = Json { prettyPrint = true; ignoreUnknownKeys = true }
     private val records = mutableMapOf<String, PlayerRecord>()
     private val lock = ReentrantReadWriteLock()
-    
+
     init {
         load()
     }
-    
-    /**
-     * Gets current records data for client synchronization.
-     */
+
     fun getSyncData(): RecordsData = lock.read {
-        RecordsData(records = records.values.toList())
+        RecordsData(records = records.values.sortedByDescending { it.wins }.toList())
     }
-    
+
     /**
-     * Updates records after a match completion with detailed statistics.
+     * Updates records after a match with full statistics.
      */
     fun updateRecords(
         winner: String,
@@ -46,37 +42,40 @@ class RecordsManager(private val filePath: String = "records.json") {
         loserMoves: List<Position> = emptyList(),
         durationSeconds: Long = 0
     ) = lock.write {
-        // Update Winner (or Player 1 in draw)
-        updatePlayerStats(
-            playerName = winner,
-            isWinner = !isDraw,
-            isDraw = isDraw,
-            isPVE = isPVE,
-            opponentDifficulty = difficulty,
-            boardSize = boardSize,
-            moves = winnerMoves,
-            duration = durationSeconds
-        )
-        
-        // Update Loser (or Player 2 in draw)
-        // Note: For AI, we don't track stats, so check if loser is "AI" (though typically we filter before calling)
-        if (loser != "AI") {
+        if (!isDraw && winner != "AI") {
             updatePlayerStats(
-                playerName = loser,
-                isWinner = false,
-                isDraw = isDraw,
+                playerName = winner,
+                isWinner = true,
+                isDraw = false,
                 isPVE = isPVE,
-                opponentDifficulty = difficulty, // Same difficulty applies
+                opponentDifficulty = difficulty,
                 boardSize = boardSize,
-                moves = loserMoves,
+                moves = winnerMoves,
                 duration = durationSeconds
             )
         }
-        
+        if (isDraw) {
+            if (winner != "AI") updatePlayerStats(winner, false, true, isPVE, difficulty, boardSize, winnerMoves, durationSeconds)
+            if (loser != "AI") updatePlayerStats(loser, false, true, isPVE, difficulty, boardSize, loserMoves, durationSeconds)
+        } else {
+            if (loser != "AI") {
+                updatePlayerStats(
+                    playerName = loser,
+                    isWinner = false,
+                    isDraw = false,
+                    isPVE = isPVE,
+                    opponentDifficulty = difficulty,
+                    boardSize = boardSize,
+                    moves = loserMoves,
+                    duration = durationSeconds
+                )
+            }
+        }
+
         save()
-        println("[RecordsManager] Updated detailed records for $winner vs $loser")
+        println("[RecordsManager] Updated records for $winner vs $loser (draw=$isDraw, pve=$isPVE)")
     }
-    
+
     private fun updatePlayerStats(
         playerName: String,
         isWinner: Boolean,
@@ -88,62 +87,57 @@ class RecordsManager(private val filePath: String = "records.json") {
         duration: Long
     ) {
         if (playerName == "AI") return
-        
-        val current = records.getOrPut(playerName) {
-            PlayerRecord(playerName = playerName)
-        }
-        
-        // Update Global Stats
-        val newWins = current.wins + (if (isWinner) 1 else 0)
-        val newLosses = current.losses + (if (!isWinner && !isDraw) 1 else 0)
-        val newDraws = current.draws + (if (isDraw) 1 else 0)
+
+        val current = records.getOrPut(playerName) { PlayerRecord(playerName = playerName) }
+
+        // Global stats
+        val newWins = current.wins + if (isWinner) 1 else 0
+        val newLosses = current.losses + if (!isWinner && !isDraw) 1 else 0
+        val newDraws = current.draws + if (isDraw) 1 else 0
         val newCurrentStreak = if (isWinner) current.currentStreak + 1 else 0
         val newBestStreak = maxOf(current.bestStreak, newCurrentStreak)
-        
-        // Update PVP/PVE Stats
-        val newPvpWins = current.pvpWins + (if (!isPVE && isWinner) 1 else 0)
-        val newPvpLosses = current.pvpLosses + (if (!isPVE && !isWinner && !isDraw) 1 else 0)
-        val newPvpDraws = current.pvpDraws + (if (!isPVE && isDraw) 1 else 0)
-        
-        val newPveWins = current.pveWins + (if (isPVE && isWinner) 1 else 0)
-        val newPveLosses = current.pveLosses + (if (isPVE && !isWinner && !isDraw) 1 else 0)
-        val newPveDraws = current.pveDraws + (if (isPVE && isDraw) 1 else 0)
-        
-        // Update Advanced Metrics
+
+        // PVP/PVE stats
+        val newPvpWins    = current.pvpWins    + if (!isPVE && isWinner) 1 else 0
+        val newPvpLosses  = current.pvpLosses  + if (!isPVE && !isWinner && !isDraw) 1 else 0
+        val newPvpDraws   = current.pvpDraws   + if (!isPVE && isDraw) 1 else 0
+        val newPveWins    = current.pveWins    + if (isPVE && isWinner) 1 else 0
+        val newPveLosses  = current.pveLosses  + if (isPVE && !isWinner && !isDraw) 1 else 0
+        val newPveDraws   = current.pveDraws   + if (isPVE && isDraw) 1 else 0
+
+        // Time tracking - stored as total seconds for ALL moves combined
+        // avgTimePerMove = totalMoveTimeSeconds / totalMoves
         val newTotalMoves = current.totalMoves + moves.size
-        val newTotalTime = current.totalTimeSeconds + duration
-        
-        // Wins by Board Size
+        val newTotalMoveTime = current.totalMoveTimeSeconds + duration  // duration = total seconds for this match
+
+        // Wins by board size
         val newWinsByBoardSize = current.winsByBoardSize.toMutableMap()
-        if (isWinner) {
-            newWinsByBoardSize[boardSize] = (newWinsByBoardSize[boardSize] ?: 0) + 1
-        }
-        
-        // Wins vs AI Difficulty
+        if (isWinner) newWinsByBoardSize[boardSize] = (newWinsByBoardSize[boardSize] ?: 0) + 1
+
+        // Wins vs AI by difficulty
         val newWinVsAI = current.winVsAI.toMutableMap()
         if (isWinner && isPVE && opponentDifficulty != null) {
             newWinVsAI[opponentDifficulty] = (newWinVsAI[opponentDifficulty] ?: 0) + 1
         }
-        
-        // Move Frequencies & Favorite Move
-        val newMoveFrequencies = current.moveFrequencies.toMutableMap()
+
+        // Games played vs AI by difficulty (to compute percentage)
+        val newGamesVsAI = current.gamesVsAI.toMutableMap()
+        if (isPVE && opponentDifficulty != null) {
+            newGamesVsAI[opponentDifficulty] = (newGamesVsAI[opponentDifficulty] ?: 0) + 1
+        }
+
+        // Move frequencies and favorite move
+        val newMoveFreqs = current.moveFrequencies.toMutableMap()
         moves.forEach { pos ->
             val key = "${pos.row},${pos.col}"
-            newMoveFrequencies[key] = (newMoveFrequencies[key] ?: 0) + 1
+            newMoveFreqs[key] = (newMoveFreqs[key] ?: 0) + 1
         }
-        
-        // Calculate new favorite move
-        var newFavoriteMove = current.favoriteMove
-        if (newMoveFrequencies.isNotEmpty()) {
-            val maxEntry = newMoveFrequencies.maxByOrNull { it.value }
-            if (maxEntry != null) {
-                val parts = maxEntry.key.split(",")
-                if (parts.size == 2) {
-                    newFavoriteMove = Position(parts[0].toInt(), parts[1].toInt())
-                }
-            }
-        }
-        
+        val newFavoriteMove = if (newMoveFreqs.isNotEmpty()) {
+            val maxEntry = newMoveFreqs.maxByOrNull { it.value }!!
+            val parts = maxEntry.key.split(",")
+            Position(parts[0].toInt(), parts[1].toInt())
+        } else current.favoriteMove
+
         records[playerName] = current.copy(
             wins = newWins,
             losses = newLosses,
@@ -158,65 +152,44 @@ class RecordsManager(private val filePath: String = "records.json") {
             pveDraws = newPveDraws,
             winsByBoardSize = newWinsByBoardSize,
             winVsAI = newWinVsAI,
+            gamesVsAI = newGamesVsAI,
             totalMoves = newTotalMoves,
-            totalTimeSeconds = newTotalTime,
-            moveFrequencies = newMoveFrequencies,
+            totalMoveTimeSeconds = newTotalMoveTime,
+            moveFrequencies = newMoveFreqs,
             favoriteMove = newFavoriteMove
         )
     }
-    
-    /**
-     * Saves current records to JSON file.
-     */
+
     private fun save() {
         try {
-            val recordsData = RecordsData(records = records.values.toList())
-            val jsonString = json.encodeToString(recordsData)
-            File(filePath).writeText(jsonString)
+            val data = RecordsData(records = records.values.toList())
+            File(filePath).writeText(json.encodeToString(data))
             println("[RecordsManager] Saved ${records.size} records to $filePath")
         } catch (e: Exception) {
-            println("[RecordsManager] Error saving records: ${e.message}")
-            e.printStackTrace()
+            println("[RecordsManager] Error saving: ${e.message}")
         }
     }
-    
-    /**
-     * Loads records from JSON file.
-     */
+
     private fun load() {
         try {
             val file = File(filePath)
             if (file.exists()) {
-                val jsonString = file.readText()
-                val recordsData = json.decodeFromString<RecordsData>(jsonString)
+                val data = json.decodeFromString<RecordsData>(file.readText())
                 records.clear()
-                recordsData.records.forEach { record ->
-                    records[record.playerName] = record
-                }
+                data.records.forEach { records[it.playerName] = it }
                 println("[RecordsManager] Loaded ${records.size} records from $filePath")
             } else {
-                println("[RecordsManager] No existing records file, starting fresh")
+                println("[RecordsManager] No records file, starting fresh")
                 save()
             }
         } catch (e: Exception) {
-            println("[RecordsManager] Error loading records: ${e.message}")
-            e.printStackTrace()
+            println("[RecordsManager] Error loading: ${e.message}")
         }
     }
-    
-    /**
-     * Gets a specific player's record.
-     */
-    fun getPlayerRecord(playerName: String): PlayerRecord? = lock.read {
-        records[playerName]
-    }
-    
-    /**
-     * Gets all player records sorted by best score.
-     */
+
+    fun getPlayerRecord(playerName: String): PlayerRecord? = lock.read { records[playerName] }
+
     fun getTopPlayers(limit: Int = 10): List<PlayerRecord> = lock.read {
-        records.values
-            .sortedByDescending { it.bestStreak }
-            .take(limit)
+        records.values.sortedByDescending { it.wins }.take(limit)
     }
 }

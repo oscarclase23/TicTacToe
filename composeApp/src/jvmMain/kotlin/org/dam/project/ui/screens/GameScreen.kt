@@ -7,20 +7,27 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.zIndex
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
 import org.dam.project.client.GameClient
 import org.dam.project.client.Screen
@@ -30,176 +37,143 @@ import org.dam.project.network.RoundEnd
 import org.dam.project.ui.GameAssets
 import org.jetbrains.compose.resources.painterResource
 
-
-/**
- * Game screen with board and info panel.
- */
 @Composable
 fun GameScreen(gameClient: GameClient, matchId: String) {
     val scope = rememberCoroutineScope()
-    
-    // Observe game state from GameClient
+
     val gameState by gameClient.currentGameState.collectAsState()
-    
-    // Observe round end result for showing win/lose/draw messages
     val roundEndResult by gameClient.roundEndResult.collectAsState()
-    
-    // Observe timer
     val timeRemaining by gameClient.timeRemaining.collectAsState()
-    
-    // Observe connection states
     val isOpponentDisconnected by gameClient.isOpponentDisconnected.collectAsState()
     val isConnectionLost by gameClient.isConnectionLost.collectAsState()
-    
+
     Box(modifier = Modifier.fillMaxSize()) {
         Row(
-            modifier = Modifier.fillMaxSize().padding(32.dp),
-            horizontalArrangement = Arrangement.spacedBy(32.dp)
+            modifier = Modifier.fillMaxSize().padding(24.dp),
+            horizontalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-        // Left side: Board with status
-        Column(
-            modifier = Modifier.weight(1f),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            // Game Status Text
-            if (gameState != null) {
-                val playerId = gameClient.getPlayerId()
-                
-                // Determine which symbol the player controls
-                val playerSymbol = when (playerId) {
-                    gameState!!.playerXId -> "X"
-                    gameState!!.playerOId -> "O"
-                    else -> null
-                }
-                
-                // Check if it's the player's turn
-                val isPlayerTurn = playerSymbol == gameState!!.currentPlayer
-                
-                val statusText = when {
-                    isPlayerTurn -> "🎮 Your Turn"
-                    gameState!!.playerXId == "AI" || gameState!!.playerOId == "AI" -> "🤖 AI is thinking..."
-                    else -> "⏳ ${gameClient.opponentName ?: "Opponent"}'s Turn"
-                }
-                
-                Text(
-                    text = statusText,
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = if (isPlayerTurn) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.padding(bottom = 24.dp)
-                )
-            }
-            
-            // Board
-            if (gameState != null) {
-                val playerId = gameClient.getPlayerId()
-                val playerSymbol = when (playerId) {
-                    gameState!!.playerXId -> "X"
-                    gameState!!.playerOId -> "O"
-                    else -> null
-                }
-                val isPlayerTurn = playerSymbol == gameState!!.currentPlayer
-                
-                BoardGrid(
-                    gameState = gameState!!,
-                    isPlayerTurn = isPlayerTurn && !isOpponentDisconnected && !isConnectionLost, // Disable if connection issues
-                    roundEndResult = roundEndResult,
-                    onCellClick = { row, col ->
-                        if (isPlayerTurn && !isOpponentDisconnected && !isConnectionLost) {
-                            scope.launch {
-                                gameClient.makeMove(row, col)
+            // ── LEFT: Board + status ─────────────────────────────────────
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                if (gameState != null) {
+                    val playerId = gameClient.getPlayerId()
+                    val playerSymbol = when (playerId) {
+                        gameState!!.playerXId -> "X"
+                        gameState!!.playerOId -> "O"
+                        else -> null
+                    }
+                    val isPlayerTurn = playerSymbol == gameState!!.currentPlayer
+                    val isAIGame = gameState!!.playerXId == "AI" || gameState!!.playerOId == "AI"
+
+                    // Status text
+                    val statusText = when {
+                        isOpponentDisconnected -> "⚠️ Oponente desconectado"
+                        isConnectionLost       -> "🔴 Conexión perdida"
+                        isPlayerTurn           -> "🎮 Tu turno"
+                        isAIGame               -> "🤖 IA pensando..."
+                        else                   -> "⏳ Turno de ${gameClient.opponentName ?: "Oponente"}"
+                    }
+                    val statusColor = when {
+                        isPlayerTurn -> MaterialTheme.colorScheme.primary
+                        else         -> MaterialTheme.colorScheme.secondary
+                    }
+
+                    // Round indicator
+                    Text(
+                        text = "Ronda ${gameState!!.currentRound} / ${gameState!!.totalRounds}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+
+                    Text(
+                        text = statusText,
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = statusColor,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    // Timer bar (always visible when there's a time limit)
+                    TimerBar(
+                        timeRemaining = timeRemaining,
+                        timeLimit = gameState!!.timeLimit,
+                        isPlayerTurn = isPlayerTurn
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Score display above board
+                    ScoreRow(
+                        gameState = gameState!!,
+                        gameClient = gameClient,
+                        playerSymbol = playerSymbol
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Board
+                    BoardGrid(
+                        gameState = gameState!!,
+                        isPlayerTurn = isPlayerTurn && !isOpponentDisconnected && !isConnectionLost,
+                        roundEndResult = roundEndResult,
+                        onCellClick = { row, col ->
+                            if (isPlayerTurn && !isOpponentDisconnected && !isConnectionLost) {
+                                scope.launch { gameClient.makeMove(row, col) }
                             }
                         }
+                    )
+                } else {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(64.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Cargando partida...", color = MaterialTheme.colorScheme.onBackground)
+                }
+            }
+
+            // ── RIGHT: Info panel ────────────────────────────────────────
+            InfoPanel(
+                gameState = gameState,
+                gameClient = gameClient,
+                onLeave = {
+                    scope.launch {
+                        gameClient.surrenderGame()
+                        gameClient.navigateTo(Screen.Menu)
                     }
-                )
-            } else {
-                CircularProgressIndicator()
-            }
-        }
-        
-        // Right side: Info panel
-        InfoPanel(
-            gameState = gameState,
-            gameClient = gameClient,
-            timeRemaining = timeRemaining,
-            onLeave = {
-                // Determine if we should Surrender or just Leave
-                scope.launch {
-                    // if (gameState != null && !gameState!!.isGameOver) { // Logic to check if game is over?
-                         // Ideally we ask "Surrender?" 
-                         gameClient.surrenderGame() // Explicit surrender on leave
-                         // Leave game logic handles navigation
-
-                         gameClient.navigateTo(Screen.Menu)
-                    // }
+                },
+                onUndo = {
+                    scope.launch { gameClient.requestUndo() }
                 }
-            }
-        )
+            )
         }
-        
-        // OVERLAYS
-        
-        // 1. Connection Lost Overlay
+
+        // ── OVERLAYS ──────────────────────────────────────────────────────
+
         if (isConnectionLost) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.8f))
-                    .zIndex(2000f),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.error)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        "Conexión perdida...",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Text(
-                        "Intentando reconectar...",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White
-                    )
-                }
-            }
-        }
-        
-        // 2. Opponent Disconnected Overlay
-        if (isOpponentDisconnected && !isConnectionLost) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.7f))
-                    .zIndex(1500f),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.secondary)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        "Oponente desconectado",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                    Text(
-                        "Esperando a que regrese...",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White
-                    )
-                }
-            }
+            ConnectionOverlay(
+                title = "🔴 Conexión perdida",
+                subtitle = "Intentando reconectar...",
+                color = MaterialTheme.colorScheme.error,
+                zIndex = 2000f
+            )
         }
 
-        // 3. Round End Result Overlay
+        if (isOpponentDisconnected && !isConnectionLost) {
+            ConnectionOverlay(
+                title = "⚠️ Oponente desconectado",
+                subtitle = "Esperando a que regrese...",
+                color = MaterialTheme.colorScheme.secondary,
+                zIndex = 1500f
+            )
+        }
+
         if (roundEndResult != null && gameState != null) {
-            // REMOVED isPVEGame check to allow PVP overlay
-            println("[GameScreen] Showing round end overlay: winner=${roundEndResult!!.winner}, isDraw=${roundEndResult!!.isDraw}")
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .zIndex(1000f) // Ensure it's on top
-            ) {
+            Box(modifier = Modifier.fillMaxSize().zIndex(1000f)) {
                 RoundEndOverlay(
                     roundEnd = roundEndResult!!,
                     gameState = gameState!!,
@@ -210,9 +184,90 @@ fun GameScreen(gameClient: GameClient, matchId: String) {
     }
 }
 
-/**
- * Game board grid with animations.
- */
+// ── Timer Bar ───────────────────────────────────────────────────────────────
+
+@Composable
+private fun TimerBar(timeRemaining: Int?, timeLimit: Int, isPlayerTurn: Boolean) {
+    if (timeRemaining == null) return
+
+    val fraction = (timeRemaining.toFloat() / timeLimit).coerceIn(0f, 1f)
+    val barColor = when {
+        timeRemaining <= 5  -> Color(0xFFFF0000)
+        timeRemaining <= 10 -> Color(0xFFFF9800)
+        else                -> Color(0xFF4CAF50)
+    }
+
+    val label = if (isPlayerTurn) "⏱️ Tu tiempo: ${timeRemaining}s" else "⏳ Tiempo rival: ${timeRemaining}s"
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.titleMedium,
+            color = barColor,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.85f)
+                .height(8.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(fraction)
+                    .height(8.dp)
+                    .background(barColor)
+            )
+        }
+    }
+}
+
+// ── Score Row ──────────────────────────────────────────────────────────────
+
+@Composable
+private fun ScoreRow(gameState: GameState, gameClient: GameClient, playerSymbol: String?) {
+    val opponentSymbol = if (playerSymbol == "X") "O" else "X"
+    val isAIGame = gameState.playerXId == "AI" || gameState.playerOId == "AI"
+    val opponentLabel = if (isAIGame) "IA" else (gameClient.opponentName ?: "Oponente")
+    val playerLabel = gameClient.getPlayerName() ?: "Tú"
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(0.85f)
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(12.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(playerLabel, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+            Text(
+                "${gameState.scores[playerSymbol] ?: 0}",
+                style = MaterialTheme.typography.displaySmall,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
+            )
+            Text("(${playerSymbol})", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
+        }
+        Text("vs", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(opponentLabel, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+            Text(
+                "${gameState.scores[opponentSymbol] ?: 0}",
+                style = MaterialTheme.typography.displaySmall,
+                color = MaterialTheme.colorScheme.secondary,
+                fontWeight = FontWeight.Bold
+            )
+            Text("(${opponentSymbol})", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
+        }
+    }
+}
+
+// ── Board Grid ─────────────────────────────────────────────────────────────
+
 @Composable
 private fun BoardGrid(
     gameState: GameState,
@@ -221,43 +276,41 @@ private fun BoardGrid(
     onCellClick: (Int, Int) -> Unit
 ) {
     val boardSize = gameState.boardSize
-    val cellSize = 100.dp
+    val cellSize = when (boardSize) {
+        3 -> 110.dp
+        4 -> 90.dp
+        else -> 72.dp
+    }
     val spacing = 4.dp
-    
-    // Animation for draw (shake)
+
     val isDraw = roundEndResult?.isDraw == true
     val shakeOffset by animateFloatAsState(
         targetValue = if (isDraw) 1f else 0f,
-        animationSpec = repeatable(
-            iterations = 3,
-            animation = tween(100, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
+        animationSpec = repeatable(4, tween(80), RepeatMode.Reverse),
         label = "shake"
     )
-    
-    // Animation for winning line
+
     val winningLine = roundEndResult?.winningLine
     val lineProgress by animateFloatAsState(
         targetValue = if (winningLine != null) 1f else 0f,
-        animationSpec = tween(800, easing = FastOutSlowInEasing),
+        animationSpec = tween(700, easing = FastOutSlowInEasing),
         label = "winLine"
     )
-    
+
     Box {
         Column(
-            modifier = Modifier
-                .rotate(shakeOffset * 2f), // Shake animation for draw
+            modifier = Modifier.rotate(shakeOffset * 3f),
             verticalArrangement = Arrangement.spacedBy(spacing)
         ) {
             for (row in 0 until boardSize) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(spacing)
-                ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(spacing)) {
                     for (col in 0 until boardSize) {
+                        val symbol = gameState.board.getOrNull(row)?.getOrNull(col)
+                        val isWinCell = winningLine?.any { it.row == row && it.col == col } == true
                         BoardCell(
-                            symbol = gameState.board.getOrNull(row)?.getOrNull(col),
+                            symbol = symbol,
                             isClickable = isPlayerTurn,
+                            isWinCell = isWinCell,
                             onClick = { onCellClick(row, col) },
                             modifier = Modifier.size(cellSize)
                         )
@@ -265,8 +318,7 @@ private fun BoardGrid(
                 }
             }
         }
-        
-        // Draw winning line overlay on top of the board
+
         if (winningLine != null && lineProgress > 0f) {
             WinningLineOverlay(
                 positions = winningLine,
@@ -280,9 +332,6 @@ private fun BoardGrid(
     }
 }
 
-/**
- * Overlay that draws the winning line animation.
- */
 @Composable
 private fun WinningLineOverlay(
     positions: List<Position>,
@@ -297,65 +346,62 @@ private fun WinningLineOverlay(
             val cellSizePx = cellSize.toPx()
             val spacingPx = spacing.toPx()
             val offset = cellSizePx / 2
-            
             val start = positions.first()
             val end = positions.last()
-            
             val startX = start.col * (cellSizePx + spacingPx) + offset
             val startY = start.row * (cellSizePx + spacingPx) + offset
             val endX = end.col * (cellSizePx + spacingPx) + offset
             val endY = end.row * (cellSizePx + spacingPx) + offset
-            
-            val currentX = startX + (endX - startX) * progress
-            val currentY = startY + (endY - startY) * progress
-            
+
             drawLine(
-                color = Color(0xFFFFD700), // Gold color
+                color = Color(0xFFFFD700),
                 start = Offset(startX, startY),
-                end = Offset(currentX, currentY),
+                end = Offset(startX + (endX - startX) * progress, startY + (endY - startY) * progress),
                 strokeWidth = 8.dp.toPx(),
-                pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 5f), 0f)
+                pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 4f), 0f)
             )
         }
     }
 }
 
-/**
- * Individual board cell with animation.
- */
 @Composable
 private fun BoardCell(
     symbol: String?,
     isClickable: Boolean,
+    isWinCell: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Animate scale when symbol appears
     val scale by animateFloatAsState(
-        targetValue = if (symbol != null) 1f else 0f,
-        animationSpec = spring(
-            dampingRatio = 0.5f,
-            stiffness = 200f
-        )
+        targetValue = if (symbol.isNullOrEmpty()) 0f else 1f,
+        animationSpec = spring(dampingRatio = 0.4f, stiffness = 300f),
+        label = "symbolScale"
     )
-    
+
     Box(
         modifier = modifier
-            .background(MaterialTheme.colorScheme.surface)
-            .border(2.dp, MaterialTheme.colorScheme.primary)
-            .clickable(enabled = symbol.isNullOrEmpty() && isClickable) { 
+            .clip(RoundedCornerShape(8.dp))
+            .background(
+                if (isWinCell) MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
+                else MaterialTheme.colorScheme.surface
+            )
+            .border(
+                width = if (isWinCell) 3.dp else 2.dp,
+                color = if (isWinCell) Color(0xFFFFD700) else MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                shape = RoundedCornerShape(8.dp)
+            )
+            .clickable(enabled = symbol.isNullOrEmpty() && isClickable) {
                 println("[BoardCell] Cell clicked! symbol='$symbol'")
-                onClick() 
+                onClick()
             },
         contentAlignment = Alignment.Center
     ) {
-        if (symbol != null && symbol.isNotEmpty() && (symbol == "X" || symbol == "O")) {
+        if (!symbol.isNullOrEmpty() && (symbol == "X" || symbol == "O")) {
             Image(
                 painter = painterResource(GameAssets.getSymbolDrawable(symbol)),
                 contentDescription = symbol,
                 modifier = Modifier
-                    .fillMaxSize(0.85f)
-                    .align(Alignment.Center)
+                    .fillMaxSize(0.80f)
                     .scale(scale),
                 contentScale = ContentScale.Fit
             )
@@ -363,278 +409,286 @@ private fun BoardCell(
     }
 }
 
-/**
- * Info panel showing game status and controls.
- */
+// ── Info Panel ─────────────────────────────────────────────────────────────
+
 @Composable
 private fun InfoPanel(
     gameState: GameState?,
     gameClient: GameClient,
-    timeRemaining: Int?,
-    onLeave: () -> Unit
+    onLeave: () -> Unit,
+    onUndo: () -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .width(300.dp)
-            .fillMaxHeight(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
+        modifier = Modifier.width(280.dp).fillMaxHeight(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(12.dp)
     ) {
         Column(
-            modifier = Modifier.padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier.padding(16.dp).fillMaxSize(),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = "Game Info",
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.primary
-            )
-            
-            Divider()
-            
-            gameState?.let { state ->
-                // Determine which symbol the player controls
-                val playerId = gameClient.getPlayerId()
-                val playerSymbol = when (playerId) {
-                    state.playerXId -> "X"
-                    state.playerOId -> "O"
-                    else -> null
-                }
-                
-                // Check if it's the player's turn
-                val isPlayerTurn = playerSymbol == state.currentPlayer
-                
-                // Turn indicator
-                val turnText = when {
-                    isPlayerTurn -> "🎮 Your Turn"
-                    state.playerXId == "AI" || state.playerOId == "AI" -> "🤖 AI is thinking..."
-                    else -> "⏳ ${gameClient.opponentName ?: "Opponent"}'s Turn"
-                }
-                
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    text = turnText,
+                    "📋 Info de Partida",
                     style = MaterialTheme.typography.titleMedium,
-                    color = if (isPlayerTurn) 
-                        MaterialTheme.colorScheme.primary 
-                    else 
-                        MaterialTheme.colorScheme.secondary
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
                 )
-                
-                // Timer display
-                if (timeRemaining != null) {
-                    val timerColor = when {
-                        timeRemaining <= 5 -> Color(0xFFFF0000) // Intense Red
-                        timeRemaining <= 10 -> Color(0xFFFF9800) // Orange
-                        else -> MaterialTheme.colorScheme.primary
-                    }
-                    
-                    val timerLabel = if (isPlayerTurn) "⏱️ Tu tiempo" else "⏳ Rival"
-                    
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = timerLabel,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = "${timeRemaining}s",
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = timerColor
-                        )
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                // Score display
-                Text(
-                    text = "Round ${state.currentRound}",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column {
-                        Text("You", style = MaterialTheme.typography.bodyMedium)
-                        Text(
-                            text = "${state.scores[playerSymbol] ?: 0}",
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    Column {
-                        val opponentSymbol = if (playerSymbol == "X") "O" else "X"
-                        val isAI = state.playerXId == "AI" || state.playerOId == "AI"
-                        val opponentLabel = if (isAI) "AI" else (gameClient.opponentName ?: "Opponent")
-                        
-                        Text(opponentLabel, style = MaterialTheme.typography.bodyMedium)
-                        Text(
-                            text = "${state.scores[opponentSymbol] ?: 0}",
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    }
-                }
-            }
-            
-            Spacer(modifier = Modifier.weight(1f))
-            
-            // Undo button (Practice Mode only)
-            val scope = rememberCoroutineScope()
-            
-            if (gameClient.isPracticeMode()) {
-                 Button(
-                    onClick = { 
-                        scope.launch {
-                            gameClient.requestUndo()
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.tertiary
+                HorizontalDivider()
+
+                gameState?.let { state ->
+                    // Difficulty / Mode info
+                    val isAI = state.playerXId == "AI" || state.playerOId == "AI"
+                    Text(
+                        if (isAI) "🤖 Modo PVE" else "⚔️ Modo PVP",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary
                     )
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            painter = painterResource(GameAssets.restartIcon), // Use restart/back icon
-                            contentDescription = "Undo",
-                            modifier = Modifier.size(24.dp), 
-                            contentScale = ContentScale.Fit
+                    Text(
+                        "Tablero ${state.boardSize}×${state.boardSize}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                    Text(
+                        "⏱️ ${state.timeLimit}s por turno",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                    if (state.practiceMode) {
+                        Text(
+                            "📝 Modo práctica",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.tertiary
                         )
-                        Text("Undo Move")
                     }
                 }
+
+                HorizontalDivider()
+
+                // Move history
+                MoveHistoryPanel(movesLog = gameState?.movesLog ?: emptyList())
             }
 
-            // Leave button
-            Button(
-                onClick = onLeave,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error
-                )
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+            // Buttons
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (gameState?.practiceMode == true) {
+                    OutlinedButton(
+                        onClick = onUndo,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.tertiary
+                        )
+                    ) {
+                        Text("↩️ Deshacer movimiento")
+                    }
+                }
+
+                Button(
+                    onClick = onLeave,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Image(
-                        painter = painterResource(GameAssets.homeIcon),
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        contentScale = ContentScale.Fit
-                    )
-                    Text("Leave Game")
+                    Text("🚪 Abandonar partida")
                 }
             }
         }
     }
 }
 
-/**
- * Overlay that shows the round end result (win/lose/draw) with image and message.
- * Only shown for PVE games.
- */
+// ── Move History Panel ─────────────────────────────────────────────────────
+
 @Composable
-private fun RoundEndOverlay(
-    roundEnd: RoundEnd,
-    gameState: GameState,
-    gameClient: GameClient
-) {
-    // Determine if player won, lost, or drew
+private fun MoveHistoryPanel(movesLog: List<String>) {
+    Column {
+        Text(
+            "Historial de movimientos",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.SemiBold
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+
+        if (movesLog.isEmpty()) {
+            Text(
+                "Sin movimientos aún",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+            )
+        } else {
+            val listState = rememberLazyListState()
+
+            // Auto-scroll to last item
+            LaunchedEffect(movesLog.size) {
+                if (movesLog.isNotEmpty()) {
+                    listState.animateScrollToItem(movesLog.size - 1)
+                }
+            }
+
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 220.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentPadding = PaddingValues(8.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                itemsIndexed(movesLog) { _, move ->
+                    val isX = move.contains("X →")
+                    Text(
+                        text = move,
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                        color = if (isX) Color(0xFF64B5F6) else Color(0xFFEF9A9A),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(
+                                if (isX) Color(0xFF64B5F6).copy(alpha = 0.08f)
+                                else Color(0xFFEF9A9A).copy(alpha = 0.08f)
+                            )
+                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+// ── Connection Overlays ────────────────────────────────────────────────────
+
+@Composable
+private fun ConnectionOverlay(title: String, subtitle: String, color: Color, zIndex: Float) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.75f))
+            .zIndex(zIndex),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            CircularProgressIndicator(color = color, modifier = Modifier.size(56.dp))
+            Text(title, style = MaterialTheme.typography.titleLarge, color = color, fontWeight = FontWeight.Bold)
+            Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = Color.White)
+        }
+    }
+}
+
+// ── Round End Overlay ──────────────────────────────────────────────────────
+
+@Composable
+private fun RoundEndOverlay(roundEnd: RoundEnd, gameState: GameState, gameClient: GameClient) {
     val playerId = gameClient.getPlayerId()
     val playerSymbol = when (playerId) {
         gameState.playerXId -> "X"
         gameState.playerOId -> "O"
         else -> null
     }
-    
-    // Determine result from player's perspective
+
     val result = when {
         roundEnd.isDraw -> "draw"
         roundEnd.winner == playerSymbol -> "win"
         else -> "lose"
     }
-    
-    // Get image and message based on result
-    val (imageResource, message) = when (result) {
-        "win" -> GameAssets.winIcon to "¡Has ganado!"
-        "lose" -> GameAssets.loseIcon to "Has perdido"
-        "draw" -> GameAssets.drawIcon to "Empate"
-        else -> GameAssets.drawIcon to "Empate"
+
+    val (imageRes, message, bgColor) = when (result) {
+        "win"  -> Triple(GameAssets.winIcon,  "🏆 ¡Ganaste!",  Color(0xFF4CAF50))
+        "lose" -> Triple(GameAssets.loseIcon, "💀 Perdiste",   MaterialTheme.colorScheme.error)
+        else   -> Triple(GameAssets.drawIcon, "🤝 Empate",     Color(0xFFFF9800))
     }
-    
-    // Animate appearance
+
     val alpha by animateFloatAsState(
         targetValue = 1f,
-        animationSpec = tween(durationMillis = 500)
+        animationSpec = tween(400),
+        label = "overlayAlpha"
     )
-    
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.7f * alpha))
+            .background(Color.Black.copy(alpha = 0.72f * alpha))
             .alpha(alpha),
         contentAlignment = Alignment.Center
     ) {
-            Card(
-                modifier = Modifier
-                    .width(400.dp)
-                    .wrapContentHeight(), // Use wrap content instead of strict padding
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        Card(
+            modifier = Modifier.width(380.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(16.dp),
+            shape = RoundedCornerShape(20.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(32.dp).fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(32.dp).fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(bgColor.copy(alpha = 0.15f)),
+                    contentAlignment = Alignment.Center
                 ) {
-                    // Image centered
                     Image(
-                        painter = painterResource(imageResource),
+                        painter = painterResource(imageRes),
                         contentDescription = message,
-                        modifier = Modifier.size(100.dp),
+                        modifier = Modifier.size(56.dp),
                         contentScale = ContentScale.Fit
                     )
-                    
-                    // Message centered
+                }
+
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = bgColor,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+
+                if (roundEnd.reason != null) {
                     Text(
-                        text = message,
-                        style = MaterialTheme.typography.headlineLarge,
-                        color = when (result) {
-                            "win" -> MaterialTheme.colorScheme.primary
-                            "lose" -> MaterialTheme.colorScheme.error
-                            else -> MaterialTheme.colorScheme.secondary
-                        },
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
-                    
-                    // Show Reason if available (e.g. "Opponent Disconnected")
-                    if (roundEnd.reason != null) {
-                        Text(
-                            text = roundEnd.reason,
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                        )
-                    }
-                    
-                    // Round info centered
-                    Text(
-                        text = "Ronda ${gameState.currentRound}",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                        text = roundEnd.reason,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.tertiary,
+                        textAlign = TextAlign.Center
                     )
                 }
+
+                Text(
+                    text = "Ronda ${gameState.currentRound} de ${gameState.totalRounds}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
+
+                // Scores
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(24.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "${gameState.scores["X"] ?: 0}",
+                        style = MaterialTheme.typography.displaySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text("–", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
+                    Text(
+                        "${gameState.scores["O"] ?: 0}",
+                        style = MaterialTheme.typography.displaySmall,
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Text(
+                    text = "La siguiente ronda comenzará pronto...",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                    textAlign = TextAlign.Center
+                )
             }
+        }
     }
 }

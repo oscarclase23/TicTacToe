@@ -1,17 +1,9 @@
 package org.dam.project.client
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.dam.project.network.*
@@ -21,7 +13,6 @@ class GameClient(
     private val network: NetworkClient,
     private val settings: ClientSettings? = null
 ) {
-    // Internal scope with SupervisorJob - never cancelled by recomposition
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val jsonParser = Json { ignoreUnknownKeys = true }
 
@@ -46,110 +37,92 @@ class GameClient(
     private var playerId: String? = null
     var opponentName: String? = null
     private var localPlayerName: String? = null
-    private var pveMode: Boolean = false
     private var currentMatchId: String? = null
     private var recordsData: RecordsData? = null
     private var currentTimeLimit: Int = 30
-    private var currentTurboMode: Boolean = false
     private var currentPracticeMode: Boolean = false
 
     private var messageListenerJob: Job? = null
     private var timerJob: Job? = null
+    private var reconnectJob: Job? = null
 
-    /**
-     * Connects to the server.
-     * This MUST be called from a stable coroutine scope (not rememberCoroutineScope).
-     * App.kt's appScope handles this correctly.
-     */
+    // For automatic reconnection
+    private var lastHost: String = "localhost"
+    private var lastPort: Int = 5678
+    private var lastPlayerName: String = "Player"
+
+    // Time tracking per move
+    private var moveStartTime: Long = 0L
+
     suspend fun connect(host: String, port: Int, playerName: String, allowResume: Boolean = false) {
         stopMessageListener()
+        lastHost = host
+        lastPort = port
+        lastPlayerName = playerName
 
-        _uiState.value = AppUiState.Loading("Initializing...")
+        _uiState.value = AppUiState.Loading("Inicializando...")
 
-        val previousId: String? = if (allowResume) {
-            playerId ?: settings?.getString("player_id")?.also {
-                println("[GameClient] Loaded saved player ID: $it")
-            }
-        } else {
-            null
-        }
+        val previousId: String? = if (allowResume)
+            playerId ?: settings?.getString("player_id")
+        else null
 
         var attempts = 0
         val maxAttempts = 3
 
         while (attempts < maxAttempts) {
             try {
-                // Always close before (re)connecting
                 try { network.close() } catch (_: Exception) {}
 
-                _uiState.value = AppUiState.Loading("Connecting to $host:$port...")
+                _uiState.value = AppUiState.Loading("Conectando a $host:$port...")
                 network.connect(host, port)
-                println("DEBUG: Client connected. Waiting for first message from server...")
 
-                // 1. Wait for RECORDS_SYNC (server speaks first)
-                _uiState.value = AppUiState.Loading("Waiting for server records...")
+                _uiState.value = AppUiState.Loading("Esperando datos del servidor...")
                 val initialMsg = withTimeout(5000) { network.receive() }
 
                 if (initialMsg.type == MessageType.RECORDS_SYNC) {
-                    println("DEBUG: Message received: ${initialMsg.type}")
                     recordsData = jsonParser.decodeFromString<RecordsData>(initialMsg.payload)
                     println("[GameClient] Processed ${recordsData?.records?.size ?: 0} records")
-                } else {
-                    println("[GameClient] WARNING: Expected RECORDS_SYNC, got ${initialMsg.type}")
                 }
 
-                // 2. Send CONNECT
-                _uiState.value = AppUiState.Loading("Sending handshake...")
-                val connectRequest = ConnectRequest(
-                    playerName = playerName,
-                    previousPlayerId = previousId
-                )
+                _uiState.value = AppUiState.Loading("Autenticando...")
                 network.send(NetworkMessage(
                     type = MessageType.CONNECT,
-                    payload = jsonParser.encodeToString(connectRequest)
+                    payload = jsonParser.encodeToString(ConnectRequest(playerName, previousPlayerId = previousId))
                 ))
-                println("[GameClient] Connect request sent. Waiting for response...")
 
-                // 3. Wait for CONNECT response
-                _uiState.value = AppUiState.Loading("Waiting for authentication...")
                 val response = withTimeout(5000) { network.receive() }
-
                 if (response.type == MessageType.CONNECT) {
-                    val connectResponse = jsonParser.decodeFromString<ConnectResponse>(response.payload)
-                    if (connectResponse.success) {
-                        playerId = connectResponse.playerId
-                        connectResponse.playerId?.let { settings?.saveString("player_id", it) }
+                    val cr = jsonParser.decodeFromString<ConnectResponse>(response.payload)
+                    if (cr.success) {
+                        playerId = cr.playerId
+                        cr.playerId?.let { settings?.saveString("player_id", it) }
                         localPlayerName = playerName
                         println("[GameClient] Connected with ID: $playerId")
-
                         startMessageListener()
-
-                        println("[GameClient] Handshake complete. Transitioning to Menu.")
+                        _isConnectionLost.value = false
                         _uiState.value = AppUiState.Content(Screen.Menu)
-                        return  // SUCCESS
+                        return
                     } else {
-                        throw Exception(connectResponse.message)
+                        throw Exception(cr.message)
                     }
                 } else {
-                    throw Exception("Unexpected response type: ${response.type}")
+                    throw Exception("Respuesta inesperada: ${response.type}")
                 }
 
             } catch (e: Exception) {
                 attempts++
-                println("[GameClient] Connection attempt $attempts failed: ${e.message}")
+                println("[GameClient] Intento $attempts fallido: ${e.message}")
                 try { network.close() } catch (_: Exception) {}
 
                 if (attempts < maxAttempts) {
                     val delayMs = (1000 * 2.0.pow(attempts - 1)).toLong()
-                    println("[GameClient] Retrying in ${delayMs}ms...")
-                    _uiState.value = AppUiState.Loading("Retrying... ($attempts/$maxAttempts)")
+                    _uiState.value = AppUiState.Loading("Reintentando... ($attempts/$maxAttempts)")
                     delay(delayMs)
                 } else {
                     _uiState.value = AppUiState.Error(
-                        message = "Failed to connect after $maxAttempts attempts: ${e.message}",
+                        message = "No se pudo conectar después de $maxAttempts intentos: ${e.message}",
                         canRetry = true
                     )
-                    return
                 }
             }
         }
@@ -167,14 +140,17 @@ class GameClient(
                     } catch (e: Exception) {
                         if (isActive) {
                             println("ERROR: Message listener error: ${e.message}")
-                            if (!network.isConnected() ||
-                                e.message?.contains("Connection reset") == true ||
-                                e.message?.contains("Connection closed") == true ||
-                                e.message?.contains("closed") == true) {
-                                println("[GameClient] Connection lost, stopping listener")
+                            val isDisconnect = !network.isConnected() ||
+                                e.message?.contains("Connection reset", ignoreCase = true) == true ||
+                                e.message?.contains("Connection closed", ignoreCase = true) == true ||
+                                e.message?.contains("closed", ignoreCase = true) == true ||
+                                e.message?.contains("EOF", ignoreCase = true) == true
+                            if (isDisconnect) {
+                                println("[GameClient] Connection lost, attempting auto-reconnect...")
                                 scope.launch(Dispatchers.Main) {
                                     _isConnectionLost.value = true
                                 }
+                                startAutoReconnect()
                                 break
                             }
                             delay(500)
@@ -183,6 +159,64 @@ class GameClient(
                 }
             } finally {
                 println("[GameClient] Message listener stopped")
+            }
+        }
+    }
+
+    /** Automatic reconnection with exponential backoff */
+    private fun startAutoReconnect() {
+        reconnectJob?.cancel()
+        reconnectJob = scope.launch {
+            var attempt = 0
+            val maxAttempts = 8
+            while (attempt < maxAttempts && _isConnectionLost.value) {
+                attempt++
+                val delayMs = (1000 * 2.0.pow(attempt - 1).toLong()).coerceAtMost(30_000L)
+                println("[GameClient] Reconexión automática intento $attempt en ${delayMs}ms...")
+                delay(delayMs)
+
+                try {
+                    try { network.close() } catch (_: Exception) {}
+                    network.connect(lastHost, lastPort)
+
+                    val initialMsg = withTimeout(5000) { network.receive() }
+                    if (initialMsg.type == MessageType.RECORDS_SYNC) {
+                        recordsData = jsonParser.decodeFromString<RecordsData>(initialMsg.payload)
+                    }
+
+                    val savedId = playerId ?: settings?.getString("player_id")
+                    network.send(NetworkMessage(
+                        type = MessageType.CONNECT,
+                        payload = jsonParser.encodeToString(ConnectRequest(
+                            playerName = lastPlayerName,
+                            previousPlayerId = savedId
+                        ))
+                    ))
+
+                    val response = withTimeout(5000) { network.receive() }
+                    if (response.type == MessageType.CONNECT) {
+                        val cr = jsonParser.decodeFromString<ConnectResponse>(response.payload)
+                        if (cr.success) {
+                            playerId = cr.playerId
+                            cr.playerId?.let { settings?.saveString("player_id", it) }
+                            _isConnectionLost.value = false
+                            println("[GameClient] Reconectado con ID: $playerId")
+                            startMessageListener()
+                            return@launch
+                        }
+                    }
+                } catch (e: Exception) {
+                    println("[GameClient] Reconexión intento $attempt fallida: ${e.message}")
+                }
+            }
+
+            // After all retries, show error
+            if (_isConnectionLost.value) {
+                _uiState.value = AppUiState.Error(
+                    message = "No se pudo reconectar al servidor.",
+                    canRetry = true
+                )
+                _isConnectionLost.value = false
             }
         }
     }
@@ -200,32 +234,35 @@ class GameClient(
                     val gameState = jsonParser.decodeFromString<GameState>(message.payload)
                     println("[GameClient] Decoded GameState: matchId=${gameState.matchId}, currentPlayer=${gameState.currentPlayer}")
 
-                    if (_roundEndResult.value != null) {
-                        println("[GameClient] Clearing round end overlay due to new game state")
-                        _roundEndResult.value = null
-                    }
+                    if (_roundEndResult.value != null) _roundEndResult.value = null
 
                     val previousState = _currentGameState.value
                     _currentGameState.value = gameState
                     currentMatchId = gameState.matchId
                     currentTimeLimit = gameState.timeLimit
+                    currentPracticeMode = gameState.practiceMode
 
                     val turnChanged = previousState?.currentPlayer != gameState.currentPlayer
                     val roundChanged = previousState?.currentRound != gameState.currentRound
-                    if (previousState == null || turnChanged || roundChanged) startTimer()
+                    if (previousState == null || turnChanged || roundChanged) {
+                        moveStartTime = System.currentTimeMillis()
+                        startTimer()
+                    }
 
                     scope.launch(Dispatchers.Main) {
-                        val currentState = _uiState.value
-                        if (currentState !is AppUiState.Content || currentState.currentScreen !is Screen.Game) {
-                            println("[GameClient] Navigating to Game screen for match: ${gameState.matchId}")
+                        val currentUiState = _uiState.value
+                        if (currentUiState !is AppUiState.Content || currentUiState.currentScreen !is Screen.Game) {
+                            println("[GameClient] Navigating to Game: ${gameState.matchId}")
                             _uiState.value = AppUiState.Content(Screen.Game(gameState.matchId))
                         }
                     }
                 }
+
                 MessageType.MOVE_RESULT -> {
                     val moveResult = jsonParser.decodeFromString<MoveResult>(message.payload)
                     if (!moveResult.valid) println("[GameClient] Invalid move: ${moveResult.errorMessage}")
                 }
+
                 MessageType.ROUND_END -> {
                     val roundEnd = jsonParser.decodeFromString<RoundEnd>(message.payload)
                     println("[GameClient] Round ended. Winner: ${roundEnd.winner}")
@@ -236,6 +273,7 @@ class GameClient(
                         _roundEndResult.value = null
                     }
                 }
+
                 MessageType.MATCH_END -> {
                     val matchEnd = jsonParser.decodeFromString<MatchEnd>(message.payload)
                     println("[GameClient] Match ended. Winner: ${matchEnd.winner}")
@@ -255,7 +293,7 @@ class GameClient(
                         _roundEndResult.value = RoundEnd(
                             winner = winnerSymbol,
                             isDraw = matchEnd.winner == "DRAW",
-                            reason = matchEnd.reason
+                            reason = matchEnd.reason ?: "Fin de la partida"
                         )
                     }
 
@@ -267,36 +305,40 @@ class GameClient(
                         _roundEndResult.value = null
                     }
                 }
+
                 MessageType.RECORDS_SYNC -> {
                     recordsData = jsonParser.decodeFromString<RecordsData>(message.payload)
-                    println("[GameClient] Records updated: ${recordsData?.records?.size} records")
+                    println("[GameClient] Records updated: ${recordsData?.records?.size}")
                 }
+
                 MessageType.ERROR -> {
                     val error = jsonParser.decodeFromString<ErrorMessage>(message.payload)
                     println("[GameClient] Server error: ${error.message}")
                 }
+
                 MessageType.GAME_FOUND -> {
                     val gameFound = jsonParser.decodeFromString<GameFound>(message.payload)
-                    println("[GameClient] Game found! MatchId: ${gameFound.matchId}, Opponent: ${gameFound.opponentName}")
                     opponentName = gameFound.opponentName
                     scope.launch(Dispatchers.Main) {
-                        _uiState.value = AppUiState.Loading("Opponent found: ${gameFound.opponentName}. Preparing game...")
+                        _uiState.value = AppUiState.Loading("Oponente encontrado: ${gameFound.opponentName}. Preparando...")
                     }
                 }
+
                 MessageType.OPPONENT_DISCONNECTED -> {
                     println("[GameClient] Opponent disconnected!")
                     _isOpponentDisconnected.value = true
                     stopTimer()
                 }
+
                 MessageType.OPPONENT_RECONNECTED -> {
                     println("[GameClient] Opponent reconnected!")
                     _isOpponentDisconnected.value = false
                 }
-                else -> println("[GameClient] Ignoring message type: ${message.type}")
+
+                else -> println("[GameClient] Ignoring: ${message.type}")
             }
         } catch (e: Exception) {
-            println("ERROR: Unexpected error handling message ${message.type}: ${e.message}")
-            e.printStackTrace()
+            println("ERROR handling ${message.type}: ${e.message}")
         }
     }
 
@@ -316,10 +358,7 @@ class GameClient(
         practiceMode: Boolean = false
     ) {
         if (!network.isConnected()) {
-            _uiState.value = AppUiState.Error(
-                message = "Not connected to server. Please restart and try again.",
-                canRetry = false
-            )
+            _uiState.value = AppUiState.Error("No conectado al servidor. Reinicia la app.", false)
             return
         }
 
@@ -327,32 +366,20 @@ class GameClient(
         _roundEndResult.value = null
         currentMatchId = null
         currentTimeLimit = timeLimit
-        currentTurboMode = turboMode
         currentPracticeMode = practiceMode
-
-        val config = GameConfig(
-            boardSize = boardSize,
-            winLength = winLength,
-            totalRounds = totalRounds,
-            difficulty = difficulty,
-            timeLimit = timeLimit,
-            turboMode = turboMode,
-            practiceMode = practiceMode
-        )
 
         try {
             network.send(NetworkMessage(
                 type = MessageType.CREATE_GAME,
-                payload = jsonParser.encodeToString(config)
+                payload = jsonParser.encodeToString(GameConfig(
+                    boardSize = boardSize, winLength = winLength, totalRounds = totalRounds,
+                    difficulty = difficulty, timeLimit = timeLimit, turboMode = turboMode,
+                    practiceMode = practiceMode
+                ))
             ))
-            pveMode = true
-            _uiState.value = AppUiState.Loading("Creating game...")
+            _uiState.value = AppUiState.Loading("Creando partida...")
         } catch (e: Exception) {
-            println("[GameClient] Failed to send create game message: ${e.message}")
-            _uiState.value = AppUiState.Error(
-                message = "Failed to create game: ${e.message}",
-                canRetry = true
-            )
+            _uiState.value = AppUiState.Error("Error creando partida: ${e.message}", true)
         }
     }
 
@@ -361,14 +388,12 @@ class GameClient(
         stopTimer()
         network.send(NetworkMessage(
             type = MessageType.MAKE_MOVE,
-            payload = jsonParser.encodeToString(MoveRequest(position = Position(row, col)))
+            payload = jsonParser.encodeToString(MoveRequest(Position(row, col)))
         ))
-        println("[GameClient] Move sent to server")
     }
 
     suspend fun requestUndo() {
         val matchId = currentMatchId ?: return
-        println("[GameClient] Requesting Undo for match $matchId")
         network.send(NetworkMessage(
             type = MessageType.UNDO_REQUEST,
             payload = jsonParser.encodeToString(UndoRequest(matchId))
@@ -377,10 +402,7 @@ class GameClient(
 
     suspend fun joinQueue(preferredBoardSize: Int = 3, timeLimit: Int = 30, totalRounds: Int = 3) {
         if (!network.isConnected()) {
-            _uiState.value = AppUiState.Error(
-                message = "Not connected to server. Please restart and try again.",
-                canRetry = false
-            )
+            _uiState.value = AppUiState.Error("No conectado al servidor.", false)
             return
         }
         val player = playerId ?: return
@@ -412,7 +434,7 @@ class GameClient(
             }
         }
     }
-    
+
     private fun stopTimer() {
         timerJob?.cancel()
         timerJob = null
@@ -432,6 +454,7 @@ class GameClient(
 
     fun disconnect() {
         stopMessageListener()
+        reconnectJob?.cancel()
         stopTimer()
         network.close()
         currentMatchId = null

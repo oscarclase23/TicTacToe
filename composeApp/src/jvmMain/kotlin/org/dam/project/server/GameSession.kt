@@ -4,9 +4,6 @@ import org.dam.project.game.TicTacToeGame
 import org.dam.project.network.*
 import kotlinx.coroutines.*
 
-/**
- * Represents an active game session between two players or player vs AI.
- */
 class GameSession(
     val matchId: String,
     val config: GameConfig,
@@ -14,94 +11,58 @@ class GameSession(
     val playerO: String,
     val isAIGame: Boolean = false
 ) {
-    // Connection Status
     var playerXConnected: Boolean = true
     var playerOConnected: Boolean = true
-    
+
     val game = TicTacToeGame(config.boardSize, config.boardSize)
     var currentRound = 1
     val scores = mutableMapOf(playerX to 0, playerO to 0)
-    
-    // Statistics tracking
+
+    // Statistics
     val matchMoves = mutableListOf<Pair<String, Position>>()
     val matchStartTime = System.currentTimeMillis()
-    
-    // Timer management
-    private var timerJob: kotlinx.coroutines.Job? = null
-    private val scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Default)
+
+    // Timer
+    private var timerJob: Job? = null
+    private val scope = CoroutineScope(Dispatchers.Default)
     private var turnId: Long = 0
-    
-    /**
-     * Starts the turn timer.
-     */
+
     fun startTurnTimer(onTimeout: suspend () -> Unit) {
         stopTimer()
         val currentTurnId = turnId
         timerJob = scope.launch {
             try {
-                // Wait for the time limit
                 delay(config.timeLimit * 1000L)
-                // If we reach here, time is up
-                if (isActive) {
-                    // CRITICAL: Double check if we are still in the same turn
-                    if (turnId == currentTurnId) {
-                        onTimeout()
-                    }
+                if (isActive && turnId == currentTurnId) {
+                    onTimeout()
                 }
-            } catch (e: CancellationException) {
-                // Timer cancelled, do nothing
-            }
+            } catch (_: CancellationException) {}
         }
     }
-    
-    /**
-     * Stops the current turn timer.
-     */
+
     fun stopTimer() {
         timerJob?.cancel()
         timerJob = null
     }
-    
-    /**
-     * Attempts to make a move for a player.
-     * 
-     * @param playerId The player making the move
-     * @param position The position to place the mark
-     * @return MoveResult indicating success or failure
-     */
+
     fun makeMove(playerId: String, position: Position): MoveResult {
-        // Synchronize access to game state to prevent race conditions with Timer/Undo
         synchronized(this) {
-            // Determine which player symbol this player has
             val playerSymbol = when (playerId) {
                 playerX -> "X"
                 playerO -> "O"
-                else -> return MoveResult(
-                    player = "",
-                    position = position,
-                    valid = false,
-                    errorMessage = "Invalid player ID"
-                )
+                else -> return MoveResult("", position, false, "Invalid player ID")
             }
-            
-            // Check if it's this player's turn
+
             if (game.getCurrentPlayer() != playerSymbol) {
-                return MoveResult(
-                    player = playerSymbol,
-                    position = position,
-                    valid = false,
-                    errorMessage = "Not your turn"
-                )
+                return MoveResult(playerSymbol, position, false, "Not your turn")
             }
-            
-            // Attempt the move
+
             val success = game.makeMove(position.row, position.col, playerSymbol)
-    
             if (success) {
-                turnId++ // Invalidate previous timer
+                turnId++
                 matchMoves.add(playerId to position)
             }
-            
+
             return MoveResult(
                 player = playerSymbol,
                 position = position,
@@ -110,165 +71,97 @@ class GameSession(
             )
         }
     }
-    
-    /**
-     * Gets the current game state.
-     */
+
     fun getGameState(): GameState {
         val currentPlayer = game.getCurrentPlayer()
-        val nextPlayer = if (currentPlayer == "X") "O" else "X"
         return GameState(
             matchId = matchId,
             board = game.getBoard(),
             boardSize = config.boardSize,
             currentPlayer = currentPlayer,
-            nextPlayer = nextPlayer,
+            nextPlayer = if (currentPlayer == "X") "O" else "X",
             currentRound = currentRound,
+            totalRounds = config.totalRounds,
             scores = scores.mapKeys { if (it.key == playerX) "X" else "O" },
             playerXId = playerX,
             playerOId = playerO,
-            timeLimit = config.timeLimit // Include the session's time limit
+            timeLimit = config.timeLimit,
+            practiceMode = config.practiceMode,
+            movesLog = game.getMovesLogStrings()
         )
     }
-    
-    /**
-     * Checks if the current round has ended.
-     * 
-     * @return RoundEnd if round is over, null otherwise
-     */
+
     fun checkRoundEnd(): RoundEnd? {
         val winningLine = game.checkWinner()
-        
         if (winningLine != null) {
-            // Someone won
             val winner = game.getBoard()[winningLine[0].row][winningLine[0].col]
             val winnerId = if (winner == "X") playerX else playerO
             scores[winnerId] = (scores[winnerId] ?: 0) + 1
-            
-            return RoundEnd(
-                winner = winner,
-                winningLine = winningLine,
-                isDraw = false
-            )
-        } else if (game.isBoardFull()) {
-            // Draw
-            return RoundEnd(
-                winner = null,
-                winningLine = null,
-                isDraw = true
-            )
+            return RoundEnd(winner = winner, winningLine = winningLine, isDraw = false)
         }
-        
+        if (game.isBoardFull()) {
+            return RoundEnd(winner = null, winningLine = null, isDraw = true)
+        }
         return null
     }
-    
-    /**
-     * Checks if the entire match has ended.
-     * 
-     * @return MatchEnd if match is over, null otherwise
-     */
+
     fun checkMatchEnd(): MatchEnd? {
-        // Check if we've completed all rounds
         if (currentRound > config.totalRounds) {
             val xScore = scores[playerX] ?: 0
             val oScore = scores[playerO] ?: 0
-            
             val winner = when {
                 xScore > oScore -> playerX
                 oScore > xScore -> playerO
                 else -> "DRAW"
             }
-            
-            return MatchEnd(
-                winner = winner,
-                score = mapOf(
-                    playerX to xScore,
-                    playerO to oScore
-                )
-            )
+            return MatchEnd(winner = winner, score = mapOf(playerX to xScore, playerO to oScore))
         }
-        
         return null
     }
-    
-    /**
-     * Starts the next round.
-     */
+
     fun nextRound() {
         currentRound++
-        turnId++ // Invalidate previous timer
+        turnId++
         game.reset()
     }
-    
-    /**
-     * Handles an undo request from a player.
-     * 
-     * @param playerId The player requesting undo
-     * @return UndoResult indicating success/failure
-     */
+
     fun handleUndo(playerId: String): UndoResult {
-        // 1. Check if practice mode is enabled
-        if (!config.practiceMode) {
-            return UndoResult(false, "Undo only allowed in Practice Mode")
-        }
-        
-        // 2. Check if player has made any moves
+        if (!config.practiceMode) return UndoResult(false, "Undo only allowed in Practice Mode")
+
         val playerMoves = matchMoves.filter { it.first == playerId }
-        if (playerMoves.isEmpty()) {
-            return UndoResult(false, "No moves to undo")
-        }
-        
-        // 3. Logic: Undo until we revert the last move by this player
-        // In PVE, this usually means undoing AI move + Player move
-        // In PVP local (if supported), just one move? Or usually undo is "take back move"
-        
-        var undoneCount = 0
+        if (playerMoves.isEmpty()) return UndoResult(false, "No moves to undo")
+
         var foundPlayerMove = false
-        
+        var undoneCount = 0
+
         while (matchMoves.isNotEmpty() && !foundPlayerMove) {
             val lastMove = matchMoves.removeLast()
             game.undoLastMove()
             undoneCount++
-            
-            if (lastMove.first == playerId) {
-                foundPlayerMove = true
-            }
+            if (lastMove.first == playerId) foundPlayerMove = true
         }
-        
-        if (foundPlayerMove) {
-            // Cancel any active timer and restart it for the current player (which should be the one who just undid)
+
+        return if (foundPlayerMove) {
             stopTimer()
-            return UndoResult(true, "Undid $undoneCount moves")
-        }
-        
-        return UndoResult(false, "Failed to undo")
-    }
-    
-    /**
-     * Gets the player ID for a given symbol.
-     */
-    fun getPlayerId(symbol: String): String {
-        return when (symbol) {
-            "X" -> playerX
-            "O" -> playerO
-            else -> ""
+            UndoResult(true, "Undid $undoneCount moves")
+        } else {
+            UndoResult(false, "Failed to undo")
         }
     }
 
-    /**
-     * Sets the connection status for a player.
-     */
+    fun getPlayerId(symbol: String): String = when (symbol) {
+        "X" -> playerX
+        "O" -> playerO
+        else -> ""
+    }
+
     fun setPlayerConnected(playerId: String, connected: Boolean) {
         if (playerId == playerX) playerXConnected = connected
         if (playerId == playerO) playerOConnected = connected
     }
 
-    /**
-     * Checks if a player is connected.
-     */
-    fun isPlayerConnected(playerId: String): Boolean {
-        return if (playerId == playerX) playerXConnected 
-               else if (playerId == playerO) playerOConnected
-               else false
-    }
+    fun isPlayerConnected(playerId: String): Boolean =
+        if (playerId == playerX) playerXConnected
+        else if (playerId == playerO) playerOConnected
+        else false
 }
