@@ -1,1 +1,37 @@
-[]
+[
+    {
+        "matchId": "fc9a74b7-00be-4935-9a9e-c9576df90060",
+        "config": {
+            "boardSize": 3,
+            "winLength": 3,
+            "totalRounds": 3,
+            "difficulty": "EASY"
+        },
+        "playerX": "AI",
+        "playerO": "5abeda1d-c1af-4aef-bb2b-2eee74743ccc",
+        "isAIGame": true,
+        "matchStartTime": 1771539847783,
+        "boardState": [
+            [
+                "",
+                "",
+                ""
+            ],
+            [
+                "",
+                "X",
+                ""
+            ],
+            [
+                "",
+                "",
+                ""
+            ]
+        ],
+        "currentPlayer": "O",
+        "scores": {
+            "AI": 0,
+            "5abeda1d-c1af-4aef-bb2b-2eee74743ccc": 0
+        }
+    }
+]

@@ -1,8 +1,9 @@
-=== Log started at 2026-02-19T19:21:33.6202134 ===
+=== Log started at 2026-02-19T23:24:07.6588952 ===
 Logging to file: C:\Users\oscar\Documents\IntelliJ\TicTacToe\composeApp\server.log
 [ServerConfig] File not found: server.properties, using defaults
 [ServerConfig] Configuration: host=0.0.0.0, port=5678, maxClients=10
 [RecordsManager] Loaded 4 records from records.json
+[GameServer] Restored 2 active games
 [GameServer] Server started on 0.0.0.0:5678
 [GameServer] Max clients: 10
 [GameServer] Server is running. Press Ctrl+C to stop.
@@ -12,251 +13,1018 @@ Logging to file: C:\Users\oscar\Documents\IntelliJ\TicTacToe\composeApp\server.l
 [ClientHandler] Sending initial records...
 [ClientHandler] Initial records sent.
 [ClientHandler] Received CONNECT from null
-[ClientHandler] Message payload: {"playerName":"oscar","previousPlayerId":"94722c2c-786b-4dbc-8367-900bc9d1c5ac"}
-[GameServer] Registered client: b5d31ae2-bf25-4b3e-b19a-ec2ad7329621 (oscar)
-[ClientHandler] Player connected: b5d31ae2-bf25-4b3e-b19a-ec2ad7329621 (oscar)
+[ClientHandler] Message payload: {"playerName":"oscar","previousPlayerId":"ed4ccca9-d20e-44b2-b94d-34975ccfdee5"}
+[GameServer] Resuming session for ed4ccca9-d20e-44b2-b94d-34975ccfdee5 (f0180b6f-1ac3-486b-90e6-0c663d43f5e5)
+[ClientHandler] Player connected: ed4ccca9-d20e-44b2-b94d-34975ccfdee5 (oscar)
+[ClientHandler] Received SURRENDER from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: 
+[ClientHandler] Player ed4ccca9-d20e-44b2-b94d-34975ccfdee5 surrendered match f0180b6f-1ac3-486b-90e6-0c663d43f5e5
+[GameServer] Player ed4ccca9-d20e-44b2-b94d-34975ccfdee5 SURRENDERED game f0180b6f-1ac3-486b-90e6-0c663d43f5e5
+[RecordsManager] Saved 4 records to records.json
+[RecordsManager] Updated records for AI vs oscar (draw=false, pve=true)
+[GamesPersistenceManager] Saved 1 active games to active_games.json
 [GameServer] New connection request from /127.0.0.1
 [ClientHandler] Client connected from /127.0.0.1
 [ClientHandler] Sending initial records...
 [ClientHandler] Initial records sent.
 [ClientHandler] Received CONNECT from null
-[ClientHandler] Message payload: {"playerName":"david","previousPlayerId":"b5d31ae2-bf25-4b3e-b19a-ec2ad7329621"}
-[GameServer] Registered client: dfeda734-e234-4680-93a4-87301fd2d834 (david)
-[ClientHandler] Player connected: dfeda734-e234-4680-93a4-87301fd2d834 (david)
-[ClientHandler] Received JOIN_QUEUE from b5d31ae2-bf25-4b3e-b19a-ec2ad7329621
-[ClientHandler] Message payload: {"playerName":"b5d31ae2-bf25-4b3e-b19a-ec2ad7329621","preferredBoardSize":4}
-[GameServer] Player b5d31ae2-bf25-4b3e-b19a-ec2ad7329621 queued for 4x4. Queue size: 1
-[ClientHandler] Received JOIN_QUEUE from dfeda734-e234-4680-93a4-87301fd2d834
-[ClientHandler] Message payload: {"playerName":"dfeda734-e234-4680-93a4-87301fd2d834"}
-[GameServer] Player dfeda734-e234-4680-93a4-87301fd2d834 queued for 3x3. Queue size: 1
-[ClientHandler] Received CANCEL_QUEUE from dfeda734-e234-4680-93a4-87301fd2d834
-[ClientHandler] Message payload: 
-[ClientHandler] Received CANCEL_QUEUE from b5d31ae2-bf25-4b3e-b19a-ec2ad7329621
-[ClientHandler] Message payload: 
-[ClientHandler] Received JOIN_QUEUE from dfeda734-e234-4680-93a4-87301fd2d834
-[ClientHandler] Message payload: {"playerName":"dfeda734-e234-4680-93a4-87301fd2d834","timeLimit":60,"totalRounds":5}
-[GameServer] Player dfeda734-e234-4680-93a4-87301fd2d834 queued for 3x3. Queue size: 1
-[ClientHandler] Received JOIN_QUEUE from b5d31ae2-bf25-4b3e-b19a-ec2ad7329621
-[ClientHandler] Message payload: {"playerName":"b5d31ae2-bf25-4b3e-b19a-ec2ad7329621","timeLimit":10}
-[GameServer] Player b5d31ae2-bf25-4b3e-b19a-ec2ad7329621 queued for 3x3. Queue size: 2
-[GameServer] Creating PVP match: b51e5a6b-5e0e-49e7-8815-3df59085ecf6 between dfeda734-e234-4680-93a4-87301fd2d834 and b5d31ae2-bf25-4b3e-b19a-ec2ad7329621
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from dfeda734-e234-4680-93a4-87301fd2d834
-[ClientHandler] Message payload: {"position":{"row":1,"col":1}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=dfeda734-e234-4680-93a4-87301fd2d834, position=(1,1)
+[ClientHandler] Message payload: {"playerName":"david","previousPlayerId":"ed4ccca9-d20e-44b2-b94d-34975ccfdee5"}
+[GameServer] Registered client: 0804fe7a-3d37-46bf-ba42-c69ec6aca1b7 (david)
+[ClientHandler] Player connected: 0804fe7a-3d37-46bf-ba42-c69ec6aca1b7 (david)
+[ClientHandler] Received CREATE_GAME from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"boardSize":3,"winLength":3,"totalRounds":3,"difficulty":"EASY"}
+[GameServer] Player will go first (Player=X, AI=O)
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Created PVE game: e014eba0-7efa-433f-8591-6658397257ce (difficulty: EASY, practice=false)
+[ClientHandler] Created PVE game: e014eba0-7efa-433f-8591-6658397257ce for player ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":1}}
+[GameServer] Processing move: matchId=e014eba0-7efa-433f-8591-6658397257ce, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,1)
 [GameServer] Move result: valid=true, player=X
 [GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from b5d31ae2-bf25-4b3e-b19a-ec2ad7329621
-[ClientHandler] Message payload: {"position":{"row":0,"col":2}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=b5d31ae2-bf25-4b3e-b19a-ec2ad7329621, position=(0,2)
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (1, 2)
+[GameServer] Processing move: matchId=e014eba0-7efa-433f-8591-6658397257ce, playerId=AI, position=(1,2)
 [GameServer] Move result: valid=true, player=O
 [GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from dfeda734-e234-4680-93a4-87301fd2d834
-[ClientHandler] Message payload: {"position":{"row":0,"col":1}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=dfeda734-e234-4680-93a4-87301fd2d834, position=(0,1)
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":2}}
+[GameServer] Processing move: matchId=e014eba0-7efa-433f-8591-6658397257ce, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,2)
 [GameServer] Move result: valid=true, player=X
 [GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from b5d31ae2-bf25-4b3e-b19a-ec2ad7329621
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (2, 0)
+[GameServer] Processing move: matchId=e014eba0-7efa-433f-8591-6658397257ce, playerId=AI, position=(2,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":1}}
+[GameServer] Processing move: matchId=e014eba0-7efa-433f-8591-6658397257ce, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (0, 2)
+[GameServer] Processing move: matchId=e014eba0-7efa-433f-8591-6658397257ce, playerId=AI, position=(0,2)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
 [ClientHandler] Message payload: {"position":{"row":2,"col":1}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=b5d31ae2-bf25-4b3e-b19a-ec2ad7329621, position=(2,1)
-[GameServer] Move result: valid=true, player=O
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from dfeda734-e234-4680-93a4-87301fd2d834
-[ClientHandler] Message payload: {"position":{"row":0,"col":0}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=dfeda734-e234-4680-93a4-87301fd2d834, position=(0,0)
+[GameServer] Processing move: matchId=e014eba0-7efa-433f-8591-6658397257ce, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,1)
 [GameServer] Move result: valid=true, player=X
 [GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from b5d31ae2-bf25-4b3e-b19a-ec2ad7329621
-[ClientHandler] Message payload: {"position":{"row":2,"col":2}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=b5d31ae2-bf25-4b3e-b19a-ec2ad7329621, position=(2,2)
-[GameServer] Move result: valid=true, player=O
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from dfeda734-e234-4680-93a4-87301fd2d834
-[ClientHandler] Message payload: {"position":{"row":2,"col":0}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=dfeda734-e234-4680-93a4-87301fd2d834, position=(2,0)
-[GameServer] Move result: valid=true, player=X
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from b5d31ae2-bf25-4b3e-b19a-ec2ad7329621
-[ClientHandler] Message payload: {"position":{"row":1,"col":2}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=b5d31ae2-bf25-4b3e-b19a-ec2ad7329621, position=(1,2)
-[GameServer] Move result: valid=true, player=O
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[GameServer] Round ended: winner=O
-[ClientHandler] Received MAKE_MOVE from dfeda734-e234-4680-93a4-87301fd2d834
-[ClientHandler] Message payload: {"position":{"row":0,"col":2}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=dfeda734-e234-4680-93a4-87301fd2d834, position=(0,2)
-[GameServer] Move result: valid=true, player=X
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from b5d31ae2-bf25-4b3e-b19a-ec2ad7329621
-[ClientHandler] Message payload: {"position":{"row":1,"col":1}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=b5d31ae2-bf25-4b3e-b19a-ec2ad7329621, position=(1,1)
-[GameServer] Move result: valid=true, player=O
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from dfeda734-e234-4680-93a4-87301fd2d834
-[ClientHandler] Message payload: {"position":{"row":1,"col":2}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=dfeda734-e234-4680-93a4-87301fd2d834, position=(1,2)
-[GameServer] Move result: valid=true, player=X
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from b5d31ae2-bf25-4b3e-b19a-ec2ad7329621
-[ClientHandler] Message payload: {"position":{"row":2,"col":2}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=b5d31ae2-bf25-4b3e-b19a-ec2ad7329621, position=(2,2)
-[GameServer] Move result: valid=true, player=O
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from dfeda734-e234-4680-93a4-87301fd2d834
-[ClientHandler] Message payload: {"position":{"row":0,"col":1}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=dfeda734-e234-4680-93a4-87301fd2d834, position=(0,1)
-[GameServer] Move result: valid=true, player=X
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from b5d31ae2-bf25-4b3e-b19a-ec2ad7329621
-[ClientHandler] Message payload: {"position":{"row":0,"col":0}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=b5d31ae2-bf25-4b3e-b19a-ec2ad7329621, position=(0,0)
-[GameServer] Move result: valid=true, player=O
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[GameServer] Round ended: winner=O
-[ClientHandler] Received MAKE_MOVE from dfeda734-e234-4680-93a4-87301fd2d834
-[ClientHandler] Message payload: {"position":{"row":0,"col":0}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=dfeda734-e234-4680-93a4-87301fd2d834, position=(0,0)
-[GameServer] Move result: valid=true, player=X
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from b5d31ae2-bf25-4b3e-b19a-ec2ad7329621
-[ClientHandler] Message payload: {"position":{"row":2,"col":2}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=b5d31ae2-bf25-4b3e-b19a-ec2ad7329621, position=(2,2)
-[GameServer] Move result: valid=true, player=O
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from dfeda734-e234-4680-93a4-87301fd2d834
-[ClientHandler] Message payload: {"position":{"row":1,"col":2}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=dfeda734-e234-4680-93a4-87301fd2d834, position=(1,2)
-[GameServer] Move result: valid=true, player=X
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from b5d31ae2-bf25-4b3e-b19a-ec2ad7329621
-[ClientHandler] Message payload: {"position":{"row":2,"col":0}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=b5d31ae2-bf25-4b3e-b19a-ec2ad7329621, position=(2,0)
-[GameServer] Move result: valid=true, player=O
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from dfeda734-e234-4680-93a4-87301fd2d834
-[ClientHandler] Message payload: {"position":{"row":0,"col":1}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=dfeda734-e234-4680-93a4-87301fd2d834, position=(0,1)
-[GameServer] Move result: valid=true, player=X
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from b5d31ae2-bf25-4b3e-b19a-ec2ad7329621
-[ClientHandler] Message payload: {"position":{"row":2,"col":1}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=b5d31ae2-bf25-4b3e-b19a-ec2ad7329621, position=(2,1)
-[GameServer] Move result: valid=true, player=O
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[GameServer] Round ended: winner=O
-[ClientHandler] Received MAKE_MOVE from dfeda734-e234-4680-93a4-87301fd2d834
-[ClientHandler] Message payload: {"position":{"row":0,"col":2}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=dfeda734-e234-4680-93a4-87301fd2d834, position=(0,2)
-[GameServer] Move result: valid=true, player=X
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from b5d31ae2-bf25-4b3e-b19a-ec2ad7329621
-[ClientHandler] Message payload: {"position":{"row":0,"col":1}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=b5d31ae2-bf25-4b3e-b19a-ec2ad7329621, position=(0,1)
-[GameServer] Move result: valid=true, player=O
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from dfeda734-e234-4680-93a4-87301fd2d834
-[ClientHandler] Message payload: {"position":{"row":0,"col":0}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=dfeda734-e234-4680-93a4-87301fd2d834, position=(0,0)
-[GameServer] Move result: valid=true, player=X
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from b5d31ae2-bf25-4b3e-b19a-ec2ad7329621
-[ClientHandler] Message payload: {"position":{"row":1,"col":0}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=b5d31ae2-bf25-4b3e-b19a-ec2ad7329621, position=(1,0)
-[GameServer] Move result: valid=true, player=O
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from dfeda734-e234-4680-93a4-87301fd2d834
-[ClientHandler] Message payload: {"position":{"row":1,"col":1}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=dfeda734-e234-4680-93a4-87301fd2d834, position=(1,1)
-[GameServer] Move result: valid=true, player=X
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from b5d31ae2-bf25-4b3e-b19a-ec2ad7329621
-[ClientHandler] Message payload: {"position":{"row":1,"col":2}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=b5d31ae2-bf25-4b3e-b19a-ec2ad7329621, position=(1,2)
-[GameServer] Move result: valid=true, player=O
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from dfeda734-e234-4680-93a4-87301fd2d834
-[ClientHandler] Message payload: {"position":{"row":2,"col":2}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=dfeda734-e234-4680-93a4-87301fd2d834, position=(2,2)
-[GameServer] Move result: valid=true, player=X
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
+[GamesPersistenceManager] Saved 2 active games to active_games.json
 [GameServer] Round ended: winner=X
-[ClientHandler] Received MAKE_MOVE from dfeda734-e234-4680-93a4-87301fd2d834
-[ClientHandler] Message payload: {"position":{"row":0,"col":0}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=dfeda734-e234-4680-93a4-87301fd2d834, position=(0,0)
-[GameServer] Move result: valid=true, player=X
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from b5d31ae2-bf25-4b3e-b19a-ec2ad7329621
-[ClientHandler] Message payload: {"position":{"row":1,"col":1}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=b5d31ae2-bf25-4b3e-b19a-ec2ad7329621, position=(1,1)
-[GameServer] Move result: valid=true, player=O
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from dfeda734-e234-4680-93a4-87301fd2d834
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
 [ClientHandler] Message payload: {"position":{"row":0,"col":2}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=dfeda734-e234-4680-93a4-87301fd2d834, position=(0,2)
+[GameServer] Processing move: matchId=e014eba0-7efa-433f-8591-6658397257ce, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,2)
 [GameServer] Move result: valid=true, player=X
 [GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from b5d31ae2-bf25-4b3e-b19a-ec2ad7329621
-[ClientHandler] Message payload: {"position":{"row":0,"col":1}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=b5d31ae2-bf25-4b3e-b19a-ec2ad7329621, position=(0,1)
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (2, 2)
+[GameServer] Processing move: matchId=e014eba0-7efa-433f-8591-6658397257ce, playerId=AI, position=(2,2)
 [GameServer] Move result: valid=true, player=O
 [GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from dfeda734-e234-4680-93a4-87301fd2d834
-[ClientHandler] Message payload: {"position":{"row":1,"col":0}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=dfeda734-e234-4680-93a4-87301fd2d834, position=(1,0)
-[GameServer] Move result: valid=true, player=X
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from b5d31ae2-bf25-4b3e-b19a-ec2ad7329621
-[ClientHandler] Message payload: {"position":{"row":2,"col":0}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=b5d31ae2-bf25-4b3e-b19a-ec2ad7329621, position=(2,0)
-[GameServer] Move result: valid=true, player=O
-[GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from dfeda734-e234-4680-93a4-87301fd2d834
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
 [ClientHandler] Message payload: {"position":{"row":1,"col":2}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=dfeda734-e234-4680-93a4-87301fd2d834, position=(1,2)
+[GameServer] Processing move: matchId=e014eba0-7efa-433f-8591-6658397257ce, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,2)
 [GameServer] Move result: valid=true, player=X
 [GameServer] Broadcasting game state after player move
-[GamesPersistenceManager] Saved 1 active games to active_games.json
-[ClientHandler] Received MAKE_MOVE from b5d31ae2-bf25-4b3e-b19a-ec2ad7329621
-[ClientHandler] Message payload: {"position":{"row":2,"col":1}}
-[GameServer] Processing move: matchId=b51e5a6b-5e0e-49e7-8815-3df59085ecf6, playerId=b5d31ae2-bf25-4b3e-b19a-ec2ad7329621, position=(2,1)
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (0, 0)
+[GameServer] Processing move: matchId=e014eba0-7efa-433f-8591-6658397257ce, playerId=AI, position=(0,0)
 [GameServer] Move result: valid=true, player=O
 [GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":1}}
+[GameServer] Processing move: matchId=e014eba0-7efa-433f-8591-6658397257ce, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (2, 0)
+[GameServer] Processing move: matchId=e014eba0-7efa-433f-8591-6658397257ce, playerId=AI, position=(2,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":0}}
+[GameServer] Processing move: matchId=e014eba0-7efa-433f-8591-6658397257ce, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,0)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Round ended: winner=X
+[GameServer] Match ended: winner=ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[RecordsManager] Saved 4 records to records.json
+[RecordsManager] Updated records for oscar vs AI (draw=false, pve=true)
 [GamesPersistenceManager] Saved 1 active games to active_games.json
+[ClientHandler] Received CREATE_GAME from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"boardSize":3,"winLength":3,"totalRounds":3,"difficulty":"EASY"}
+[GameServer] AI will go first (AI=X, Player=O)
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Created PVE game: 02712f3d-f9cd-4356-ae28-d5ae77be80b3 (difficulty: EASY, practice=false)
+[GameServer] Skipping timer for AI turn
+[ClientHandler] Created PVE game: 02712f3d-f9cd-4356-ae28-d5ae77be80b3 for player ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] AI goes first, triggering initial AI move
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=AI, position=(0,0)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":1}}
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (X) plays: (0, 2)
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=AI, position=(0,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":1}}
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (X) plays: (1, 0)
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=AI, position=(1,0)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":0}}
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (X) plays: (2, 2)
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=AI, position=(2,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":1}}
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
 [GameServer] Round ended: winner=O
-[GameServer] Match ended: winner=b5d31ae2-bf25-4b3e-b19a-ec2ad7329621
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (X) plays: (0, 0)
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=AI, position=(0,0)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":1}}
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (X) plays: (1, 1)
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=AI, position=(1,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":0}}
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (X) plays: (2, 0)
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=AI, position=(2,0)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":2}}
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,2)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (X) plays: (0, 2)
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=AI, position=(0,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Round ended: winner=X
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (X) plays: (0, 2)
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=AI, position=(0,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":1}}
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (X) plays: (2, 1)
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=AI, position=(2,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":0}}
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (X) plays: (1, 2)
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=AI, position=(1,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":2}}
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,2)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (X) plays: (0, 1)
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=AI, position=(0,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":0}}
+[GameServer] Processing move: matchId=02712f3d-f9cd-4356-ae28-d5ae77be80b3, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Round ended: winner=O
+[GameServer] Match ended: winner=ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[RecordsManager] Saved 4 records to records.json
+[RecordsManager] Updated records for oscar vs AI (draw=false, pve=true)
+[GamesPersistenceManager] Saved 1 active games to active_games.json
+[ClientHandler] Received CREATE_GAME from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"boardSize":3,"winLength":3,"totalRounds":3,"difficulty":"EASY"}
+[GameServer] AI will go first (AI=X, Player=O)
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Created PVE game: 92a59b2c-7851-499e-ab96-3823d82726c4 (difficulty: EASY, practice=false)
+[GameServer] Skipping timer for AI turn
+[ClientHandler] Created PVE game: 92a59b2c-7851-499e-ab96-3823d82726c4 for player ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] AI goes first, triggering initial AI move
+[GameServer] Processing move: matchId=92a59b2c-7851-499e-ab96-3823d82726c4, playerId=AI, position=(1,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":1}}
+[GameServer] Processing move: matchId=92a59b2c-7851-499e-ab96-3823d82726c4, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (X) plays: (0, 0)
+[GameServer] Processing move: matchId=92a59b2c-7851-499e-ab96-3823d82726c4, playerId=AI, position=(0,0)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":1}}
+[GameServer] Processing move: matchId=92a59b2c-7851-499e-ab96-3823d82726c4, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (X) plays: (1, 0)
+[GameServer] Processing move: matchId=92a59b2c-7851-499e-ab96-3823d82726c4, playerId=AI, position=(1,0)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":1}}
+[GameServer] Processing move: matchId=92a59b2c-7851-499e-ab96-3823d82726c4, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Round ended: winner=O
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (X) plays: (2, 2)
+[GameServer] Processing move: matchId=92a59b2c-7851-499e-ab96-3823d82726c4, playerId=AI, position=(2,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":1}}
+[GameServer] Processing move: matchId=92a59b2c-7851-499e-ab96-3823d82726c4, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (X) plays: (2, 1)
+[GameServer] Processing move: matchId=92a59b2c-7851-499e-ab96-3823d82726c4, playerId=AI, position=(2,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":0}}
+[GameServer] Processing move: matchId=92a59b2c-7851-499e-ab96-3823d82726c4, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (X) plays: (1, 0)
+[GameServer] Processing move: matchId=92a59b2c-7851-499e-ab96-3823d82726c4, playerId=AI, position=(1,0)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":2}}
+[GameServer] Processing move: matchId=92a59b2c-7851-499e-ab96-3823d82726c4, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,2)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Round ended: winner=O
+[GameServer] Match ended: winner=ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[RecordsManager] Saved 4 records to records.json
+[RecordsManager] Updated records for oscar vs AI (draw=false, pve=true)
+[GamesPersistenceManager] Saved 1 active games to active_games.json
+[ClientHandler] Received CREATE_GAME from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"boardSize":3,"winLength":3,"totalRounds":3,"difficulty":"HARD"}
+[GameServer] Player will go first (Player=X, AI=O)
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Created PVE game: 8be15c7e-d00f-41f3-81a6-06d69c27e529 (difficulty: HARD, practice=false)
+[ClientHandler] Created PVE game: 8be15c7e-d00f-41f3-81a6-06d69c27e529 for player ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":1}}
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (0, 0)
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=AI, position=(0,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":1}}
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (2, 1)
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=AI, position=(2,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":0}}
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,0)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (1, 2)
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=AI, position=(1,2)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":2}}
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (0, 2)
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=AI, position=(0,2)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":0}}
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,0)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Round ended: winner=null
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":2}}
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (1, 1)
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=AI, position=(1,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":0}}
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,0)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (0, 1)
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=AI, position=(0,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":1}}
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (2, 2)
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=AI, position=(2,2)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":0}}
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,0)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (1, 0)
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=AI, position=(1,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":2}}
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Round ended: winner=null
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":1}}
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (0, 0)
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=AI, position=(0,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":1}}
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (2, 1)
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=AI, position=(2,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":0}}
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,0)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (0, 2)
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=AI, position=(0,2)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":2}}
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (1, 0)
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=AI, position=(1,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":2}}
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Round ended: winner=null
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":1}}
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (0, 0)
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=AI, position=(0,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":1}}
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (2, 1)
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=AI, position=(2,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":0}}
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,0)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (0, 2)
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=AI, position=(0,2)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":2}}
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (1, 0)
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=AI, position=(1,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":2}}
+[GameServer] Processing move: matchId=8be15c7e-d00f-41f3-81a6-06d69c27e529, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Round ended: winner=null
+[GameServer] Match ended: winner=DRAW
+[RecordsManager] Saved 4 records to records.json
+[RecordsManager] Updated records for oscar vs AI (draw=true, pve=true)
+[GamesPersistenceManager] Saved 1 active games to active_games.json
+[ClientHandler] Received CREATE_GAME from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"boardSize":3,"winLength":3,"totalRounds":3,"difficulty":"EASY"}
+[GameServer] AI will go first (AI=X, Player=O)
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Created PVE game: 2e6e02b8-dc51-42b9-a6bc-d25b320be987 (difficulty: EASY, practice=false)
+[GameServer] Skipping timer for AI turn
+[ClientHandler] Created PVE game: 2e6e02b8-dc51-42b9-a6bc-d25b320be987 for player ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] AI goes first, triggering initial AI move
+[GameServer] Processing move: matchId=2e6e02b8-dc51-42b9-a6bc-d25b320be987, playerId=AI, position=(2,0)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":1}}
+[GameServer] Processing move: matchId=2e6e02b8-dc51-42b9-a6bc-d25b320be987, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (X) plays: (2, 1)
+[GameServer] Processing move: matchId=2e6e02b8-dc51-42b9-a6bc-d25b320be987, playerId=AI, position=(2,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":0}}
+[GameServer] Processing move: matchId=2e6e02b8-dc51-42b9-a6bc-d25b320be987, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (X) plays: (0, 2)
+[GameServer] Processing move: matchId=2e6e02b8-dc51-42b9-a6bc-d25b320be987, playerId=AI, position=(0,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":1}}
+[GameServer] Processing move: matchId=2e6e02b8-dc51-42b9-a6bc-d25b320be987, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (X) plays: (2, 2)
+[GameServer] Processing move: matchId=2e6e02b8-dc51-42b9-a6bc-d25b320be987, playerId=AI, position=(2,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Round ended: winner=X
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (X) plays: (1, 1)
+[GameServer] Processing move: matchId=2e6e02b8-dc51-42b9-a6bc-d25b320be987, playerId=AI, position=(1,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":1}}
+[GameServer] Processing move: matchId=2e6e02b8-dc51-42b9-a6bc-d25b320be987, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (X) plays: (2, 2)
+[GameServer] Processing move: matchId=2e6e02b8-dc51-42b9-a6bc-d25b320be987, playerId=AI, position=(2,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":1}}
+[GameServer] Processing move: matchId=2e6e02b8-dc51-42b9-a6bc-d25b320be987, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (X) plays: (0, 0)
+[GameServer] Processing move: matchId=2e6e02b8-dc51-42b9-a6bc-d25b320be987, playerId=AI, position=(0,0)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Round ended: winner=X
+[GameServer] Match ended: winner=AI
+[RecordsManager] Saved 4 records to records.json
+[RecordsManager] Updated records for AI vs oscar (draw=false, pve=true)
+[GamesPersistenceManager] Saved 1 active games to active_games.json
+[ClientHandler] Received CREATE_GAME from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"boardSize":3,"winLength":3,"totalRounds":3,"difficulty":"EASY"}
+[GameServer] Player will go first (Player=X, AI=O)
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Created PVE game: 527b4c1a-c020-4438-bef0-92820bc1b008 (difficulty: EASY, practice=false)
+[ClientHandler] Created PVE game: 527b4c1a-c020-4438-bef0-92820bc1b008 for player ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":1}}
+[GameServer] Processing move: matchId=527b4c1a-c020-4438-bef0-92820bc1b008, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (2, 2)
+[GameServer] Processing move: matchId=527b4c1a-c020-4438-bef0-92820bc1b008, playerId=AI, position=(2,2)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":2}}
+[GameServer] Processing move: matchId=527b4c1a-c020-4438-bef0-92820bc1b008, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (1, 0)
+[GameServer] Processing move: matchId=527b4c1a-c020-4438-bef0-92820bc1b008, playerId=AI, position=(1,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":0}}
+[GameServer] Processing move: matchId=527b4c1a-c020-4438-bef0-92820bc1b008, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,0)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (0, 1)
+[GameServer] Processing move: matchId=527b4c1a-c020-4438-bef0-92820bc1b008, playerId=AI, position=(0,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":2}}
+[GameServer] Processing move: matchId=527b4c1a-c020-4438-bef0-92820bc1b008, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Round ended: winner=X
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":1}}
+[GameServer] Processing move: matchId=527b4c1a-c020-4438-bef0-92820bc1b008, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (1, 2)
+[GameServer] Processing move: matchId=527b4c1a-c020-4438-bef0-92820bc1b008, playerId=AI, position=(1,2)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":2}}
+[GameServer] Processing move: matchId=527b4c1a-c020-4438-bef0-92820bc1b008, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (1, 1)
+[GameServer] Processing move: matchId=527b4c1a-c020-4438-bef0-92820bc1b008, playerId=AI, position=(1,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":0}}
+[GameServer] Processing move: matchId=527b4c1a-c020-4438-bef0-92820bc1b008, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,0)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (1, 0)
+[GameServer] Processing move: matchId=527b4c1a-c020-4438-bef0-92820bc1b008, playerId=AI, position=(1,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Round ended: winner=O
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":1}}
+[GameServer] Processing move: matchId=527b4c1a-c020-4438-bef0-92820bc1b008, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (0, 2)
+[GameServer] Processing move: matchId=527b4c1a-c020-4438-bef0-92820bc1b008, playerId=AI, position=(0,2)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":1}}
+[GameServer] Processing move: matchId=527b4c1a-c020-4438-bef0-92820bc1b008, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (1, 2)
+[GameServer] Processing move: matchId=527b4c1a-c020-4438-bef0-92820bc1b008, playerId=AI, position=(1,2)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":1}}
+[GameServer] Processing move: matchId=527b4c1a-c020-4438-bef0-92820bc1b008, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Round ended: winner=X
+[GameServer] Match ended: winner=ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[RecordsManager] Saved 4 records to records.json
+[RecordsManager] Updated records for oscar vs AI (draw=false, pve=true)
+[GamesPersistenceManager] Saved 1 active games to active_games.json
+[ClientHandler] Received CREATE_GAME from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"boardSize":3,"winLength":3,"totalRounds":3,"difficulty":"EASY"}
+[GameServer] Player will go first (Player=X, AI=O)
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Created PVE game: 49fa9d60-797e-4a9e-9815-ae44da8fed32 (difficulty: EASY, practice=false)
+[ClientHandler] Created PVE game: 49fa9d60-797e-4a9e-9815-ae44da8fed32 for player ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":2}}
+[GameServer] Processing move: matchId=49fa9d60-797e-4a9e-9815-ae44da8fed32, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (1, 2)
+[GameServer] Processing move: matchId=49fa9d60-797e-4a9e-9815-ae44da8fed32, playerId=AI, position=(1,2)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":1}}
+[GameServer] Processing move: matchId=49fa9d60-797e-4a9e-9815-ae44da8fed32, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (2, 1)
+[GameServer] Processing move: matchId=49fa9d60-797e-4a9e-9815-ae44da8fed32, playerId=AI, position=(2,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":0}}
+[GameServer] Processing move: matchId=49fa9d60-797e-4a9e-9815-ae44da8fed32, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,0)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Round ended: winner=X
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":2}}
+[GameServer] Processing move: matchId=49fa9d60-797e-4a9e-9815-ae44da8fed32, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (0, 0)
+[GameServer] Processing move: matchId=49fa9d60-797e-4a9e-9815-ae44da8fed32, playerId=AI, position=(0,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":1}}
+[GameServer] Processing move: matchId=49fa9d60-797e-4a9e-9815-ae44da8fed32, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Skipping timer for AI turn
+[GameServer] AI (O) plays: (2, 2)
+[GameServer] Processing move: matchId=49fa9d60-797e-4a9e-9815-ae44da8fed32, playerId=AI, position=(2,2)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":0}}
+[GameServer] Processing move: matchId=49fa9d60-797e-4a9e-9815-ae44da8fed32, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,0)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Round ended: winner=X
+[GameServer] Match ended: winner=ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[RecordsManager] Saved 4 records to records.json
+[RecordsManager] Updated records for oscar vs AI (draw=false, pve=true)
+[GamesPersistenceManager] Saved 1 active games to active_games.json
+[ClientHandler] Received JOIN_QUEUE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"playerName":"ed4ccca9-d20e-44b2-b94d-34975ccfdee5","timeLimit":15}
+[GameServer] Player ed4ccca9-d20e-44b2-b94d-34975ccfdee5 queued for 3x3 (time=15, rounds=3, turbo=false). Queue size: 1
+[ClientHandler] Received JOIN_QUEUE from 0804fe7a-3d37-46bf-ba42-c69ec6aca1b7
+[ClientHandler] Message payload: {"playerName":"0804fe7a-3d37-46bf-ba42-c69ec6aca1b7","timeLimit":60,"totalRounds":7}
+[GameServer] Player 0804fe7a-3d37-46bf-ba42-c69ec6aca1b7 queued for 3x3 (time=60, rounds=7, turbo=false). Queue size: 2
+[GameServer] Creating PVP match: c9500f6b-a20c-4705-aea3-b69fc526d419 between ed4ccca9-d20e-44b2-b94d-34975ccfdee5 and 0804fe7a-3d37-46bf-ba42-c69ec6aca1b7
+[GameServer] Negotiated: timeLimit=37, rounds=5 (from 15/60, 3/7)
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from 0804fe7a-3d37-46bf-ba42-c69ec6aca1b7
+[ClientHandler] Message payload: {"position":{"row":0,"col":1}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=0804fe7a-3d37-46bf-ba42-c69ec6aca1b7, position=(0,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":1}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from 0804fe7a-3d37-46bf-ba42-c69ec6aca1b7
+[ClientHandler] Message payload: {"position":{"row":1,"col":2}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=0804fe7a-3d37-46bf-ba42-c69ec6aca1b7, position=(1,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":2}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,2)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from 0804fe7a-3d37-46bf-ba42-c69ec6aca1b7
+[ClientHandler] Message payload: {"position":{"row":0,"col":2}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=0804fe7a-3d37-46bf-ba42-c69ec6aca1b7, position=(0,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":0}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Round ended: winner=O
+[ClientHandler] Received MAKE_MOVE from 0804fe7a-3d37-46bf-ba42-c69ec6aca1b7
+[ClientHandler] Message payload: {"position":{"row":0,"col":1}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=0804fe7a-3d37-46bf-ba42-c69ec6aca1b7, position=(0,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":0}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from 0804fe7a-3d37-46bf-ba42-c69ec6aca1b7
+[ClientHandler] Message payload: {"position":{"row":1,"col":1}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=0804fe7a-3d37-46bf-ba42-c69ec6aca1b7, position=(1,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":1}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from 0804fe7a-3d37-46bf-ba42-c69ec6aca1b7
+[ClientHandler] Message payload: {"position":{"row":2,"col":2}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=0804fe7a-3d37-46bf-ba42-c69ec6aca1b7, position=(2,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":0}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from 0804fe7a-3d37-46bf-ba42-c69ec6aca1b7
+[ClientHandler] Message payload: {"position":{"row":0,"col":2}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=0804fe7a-3d37-46bf-ba42-c69ec6aca1b7, position=(0,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":0}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Round ended: winner=O
+[ClientHandler] Received MAKE_MOVE from 0804fe7a-3d37-46bf-ba42-c69ec6aca1b7
+[ClientHandler] Message payload: {"position":{"row":0,"col":1}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=0804fe7a-3d37-46bf-ba42-c69ec6aca1b7, position=(0,1)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":1,"col":1}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(1,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from 0804fe7a-3d37-46bf-ba42-c69ec6aca1b7
+[ClientHandler] Message payload: {"position":{"row":1,"col":2}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=0804fe7a-3d37-46bf-ba42-c69ec6aca1b7, position=(1,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":1}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,1)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from 0804fe7a-3d37-46bf-ba42-c69ec6aca1b7
+[ClientHandler] Message payload: {"position":{"row":0,"col":2}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=0804fe7a-3d37-46bf-ba42-c69ec6aca1b7, position=(0,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":0,"col":0}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(0,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from 0804fe7a-3d37-46bf-ba42-c69ec6aca1b7
+[ClientHandler] Message payload: {"position":{"row":1,"col":0}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=0804fe7a-3d37-46bf-ba42-c69ec6aca1b7, position=(1,0)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from ed4ccca9-d20e-44b2-b94d-34975ccfdee5
+[ClientHandler] Message payload: {"position":{"row":2,"col":0}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=ed4ccca9-d20e-44b2-b94d-34975ccfdee5, position=(2,0)
+[GameServer] Move result: valid=true, player=O
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[ClientHandler] Received MAKE_MOVE from 0804fe7a-3d37-46bf-ba42-c69ec6aca1b7
+[ClientHandler] Message payload: {"position":{"row":2,"col":2}}
+[GameServer] Processing move: matchId=c9500f6b-a20c-4705-aea3-b69fc526d419, playerId=0804fe7a-3d37-46bf-ba42-c69ec6aca1b7, position=(2,2)
+[GameServer] Move result: valid=true, player=X
+[GameServer] Broadcasting game state after player move
+[GamesPersistenceManager] Saved 2 active games to active_games.json
+[GameServer] Round ended: winner=X
+[GameServer] Timeout for match c9500f6b-a20c-4705-aea3-b69fc526d419
+[GameServer] Timeout! Winner is O (ed4ccca9-d20e-44b2-b94d-34975ccfdee5)
+[GameServer] Match ended: winner=ed4ccca9-d20e-44b2-b94d-34975ccfdee5
 [RecordsManager] Saved 4 records to records.json
 [RecordsManager] Updated records for oscar vs david (draw=false, pve=false)
-[GamesPersistenceManager] Saved 0 active games to active_games.json
+[GamesPersistenceManager] Saved 1 active games to active_games.json
+[ClientHandler] Connection error: Connection reset
+[GameServer] Unregistered client: 0804fe7a-3d37-46bf-ba42-c69ec6aca1b7
+[ClientHandler] Client disconnected: 0804fe7a-3d37-46bf-ba42-c69ec6aca1b7

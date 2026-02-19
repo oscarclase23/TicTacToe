@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.dam.project.client.GameClient
 import org.dam.project.client.Screen
@@ -36,6 +37,8 @@ import org.dam.project.network.Position
 import org.dam.project.network.RoundEnd
 import org.dam.project.ui.GameAssets
 import org.jetbrains.compose.resources.painterResource
+
+// ── Main Screen ────────────────────────────────────────────────────────────
 
 @Composable
 fun GameScreen(gameClient: GameClient, matchId: String) {
@@ -46,6 +49,9 @@ fun GameScreen(gameClient: GameClient, matchId: String) {
     val timeRemaining by gameClient.timeRemaining.collectAsState()
     val isOpponentDisconnected by gameClient.isOpponentDisconnected.collectAsState()
     val isConnectionLost by gameClient.isConnectionLost.collectAsState()
+
+    // Determine if the current roundEndResult is a match-end overlay
+    val isMatchEnd = roundEndResult?.reason?.contains("Fin del Match") == true
 
     Box(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -68,7 +74,6 @@ fun GameScreen(gameClient: GameClient, matchId: String) {
                     val isPlayerTurn = playerSymbol == gameState!!.currentPlayer
                     val isAIGame = gameState!!.playerXId == "AI" || gameState!!.playerOId == "AI"
 
-                    // Status text
                     val statusText = when {
                         isOpponentDisconnected -> "⚠️ Oponente desconectado"
                         isConnectionLost       -> "🔴 Conexión perdida"
@@ -97,7 +102,6 @@ fun GameScreen(gameClient: GameClient, matchId: String) {
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
-                    // Timer bar (always visible when there's a time limit)
                     TimerBar(
                         timeRemaining = timeRemaining,
                         timeLimit = gameState!!.timeLimit,
@@ -106,7 +110,6 @@ fun GameScreen(gameClient: GameClient, matchId: String) {
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Score display above board
                     ScoreRow(
                         gameState = gameState!!,
                         gameClient = gameClient,
@@ -115,13 +118,16 @@ fun GameScreen(gameClient: GameClient, matchId: String) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Board
                     BoardGrid(
                         gameState = gameState!!,
-                        isPlayerTurn = isPlayerTurn && !isOpponentDisconnected && !isConnectionLost,
+                        // Disable board interaction while any overlay is showing
+                        isPlayerTurn = isPlayerTurn &&
+                                !isOpponentDisconnected &&
+                                !isConnectionLost &&
+                                roundEndResult == null,
                         roundEndResult = roundEndResult,
                         onCellClick = { row, col ->
-                            if (isPlayerTurn && !isOpponentDisconnected && !isConnectionLost) {
+                            if (isPlayerTurn && !isOpponentDisconnected && !isConnectionLost && roundEndResult == null) {
                                 scope.launch { gameClient.makeMove(row, col) }
                             }
                         }
@@ -152,14 +158,14 @@ fun GameScreen(gameClient: GameClient, matchId: String) {
             )
         }
 
-        // ── OVERLAYS ──────────────────────────────────────────────────────
+        // ── OVERLAYS (in z-order) ─────────────────────────────────────────
 
         if (isConnectionLost) {
             ConnectionOverlay(
                 title = "🔴 Conexión perdida",
                 subtitle = "Intentando reconectar...",
                 color = MaterialTheme.colorScheme.error,
-                zIndex = 2000f
+                zIndex = 3000f
             )
         }
 
@@ -168,13 +174,26 @@ fun GameScreen(gameClient: GameClient, matchId: String) {
                 title = "⚠️ Oponente desconectado",
                 subtitle = "Esperando a que regrese...",
                 color = MaterialTheme.colorScheme.secondary,
-                zIndex = 1500f
+                zIndex = 2500f
             )
         }
 
-        if (roundEndResult != null && gameState != null) {
+        // Round-end overlay (not match-end)
+        if (roundEndResult != null && gameState != null && !isMatchEnd) {
             Box(modifier = Modifier.fillMaxSize().zIndex(1000f)) {
                 RoundEndOverlay(
+                    roundEnd = roundEndResult!!,
+                    gameState = gameState!!,
+                    gameClient = gameClient,
+                    isMatchEnd = false
+                )
+            }
+        }
+
+        // Match-end overlay (higher z than round-end)
+        if (roundEndResult != null && gameState != null && isMatchEnd) {
+            Box(modifier = Modifier.fillMaxSize().zIndex(2000f)) {
+                MatchEndOverlay(
                     roundEnd = roundEndResult!!,
                     gameState = gameState!!,
                     gameClient = gameClient
@@ -188,7 +207,11 @@ fun GameScreen(gameClient: GameClient, matchId: String) {
 
 @Composable
 private fun TimerBar(timeRemaining: Int?, timeLimit: Int, isPlayerTurn: Boolean) {
-    if (timeRemaining == null) return
+    if (timeRemaining == null) {
+        // Show empty placeholder to avoid layout jump
+        Spacer(modifier = Modifier.height(36.dp))
+        return
+    }
 
     val fraction = (timeRemaining.toFloat() / timeLimit).coerceIn(0f, 1f)
     val barColor = when {
@@ -196,6 +219,13 @@ private fun TimerBar(timeRemaining: Int?, timeLimit: Int, isPlayerTurn: Boolean)
         timeRemaining <= 10 -> Color(0xFFFF9800)
         else                -> Color(0xFF4CAF50)
     }
+
+    // Animate bar color transition
+    val animatedFraction by animateFloatAsState(
+        targetValue = fraction,
+        animationSpec = tween(800),
+        label = "timerFraction"
+    )
 
     val label = if (isPlayerTurn) "⏱️ Tu tiempo: ${timeRemaining}s" else "⏳ Tiempo rival: ${timeRemaining}s"
 
@@ -210,14 +240,14 @@ private fun TimerBar(timeRemaining: Int?, timeLimit: Int, isPlayerTurn: Boolean)
         Box(
             modifier = Modifier
                 .fillMaxWidth(0.85f)
-                .height(8.dp)
-                .clip(RoundedCornerShape(4.dp))
+                .height(10.dp)
+                .clip(RoundedCornerShape(5.dp))
                 .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(fraction)
-                    .height(8.dp)
+                    .fillMaxWidth(animatedFraction)
+                    .height(10.dp)
                     .background(barColor)
             )
         }
@@ -243,25 +273,45 @@ private fun ScoreRow(gameState: GameState, gameClient: GameClient, playerSymbol:
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(playerLabel, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+            Text(
+                playerLabel,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
             Text(
                 "${gameState.scores[playerSymbol] ?: 0}",
                 style = MaterialTheme.typography.displaySmall,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold
             )
-            Text("(${playerSymbol})", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
+            Text(
+                "(${playerSymbol})",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+            )
         }
-        Text("vs", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
+        Text(
+            "vs",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+        )
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(opponentLabel, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+            Text(
+                opponentLabel,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
             Text(
                 "${gameState.scores[opponentSymbol] ?: 0}",
                 style = MaterialTheme.typography.displaySmall,
                 color = MaterialTheme.colorScheme.secondary,
                 fontWeight = FontWeight.Bold
             )
-            Text("(${opponentSymbol})", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
+            Text(
+                "(${opponentSymbol})",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+            )
         }
     }
 }
@@ -277,18 +327,25 @@ private fun BoardGrid(
 ) {
     val boardSize = gameState.boardSize
     val cellSize = when (boardSize) {
-        3 -> 110.dp
-        4 -> 90.dp
+        3    -> 110.dp
+        4    -> 90.dp
         else -> 72.dp
     }
     val spacing = 4.dp
 
     val isDraw = roundEndResult?.isDraw == true
-    val shakeOffset by animateFloatAsState(
-        targetValue = if (isDraw) 1f else 0f,
-        animationSpec = repeatable(4, tween(80), RepeatMode.Reverse),
-        label = "shake"
-    )
+
+    // Shake animation on draw
+    val shakeAnim = remember { Animatable(0f) }
+    LaunchedEffect(isDraw) {
+        if (isDraw) {
+            repeat(5) {
+                shakeAnim.animateTo(6f, animationSpec = tween(60))
+                shakeAnim.animateTo(-6f, animationSpec = tween(60))
+            }
+            shakeAnim.animateTo(0f, animationSpec = tween(60))
+        }
+    }
 
     val winningLine = roundEndResult?.winningLine
     val lineProgress by animateFloatAsState(
@@ -299,7 +356,7 @@ private fun BoardGrid(
 
     Box {
         Column(
-            modifier = Modifier.rotate(shakeOffset * 3f),
+            modifier = Modifier.rotate(shakeAnim.value),
             verticalArrangement = Arrangement.spacedBy(spacing)
         ) {
             for (row in 0 until boardSize) {
@@ -322,7 +379,6 @@ private fun BoardGrid(
         if (winningLine != null && lineProgress > 0f) {
             WinningLineOverlay(
                 positions = winningLine,
-                boardSize = boardSize,
                 cellSize = cellSize,
                 spacing = spacing,
                 progress = lineProgress,
@@ -335,7 +391,6 @@ private fun BoardGrid(
 @Composable
 private fun WinningLineOverlay(
     positions: List<Position>,
-    boardSize: Int,
     cellSize: androidx.compose.ui.unit.Dp,
     spacing: androidx.compose.ui.unit.Dp,
     progress: Float,
@@ -344,19 +399,22 @@ private fun WinningLineOverlay(
     Canvas(modifier = modifier) {
         if (positions.size >= 2) {
             val cellSizePx = cellSize.toPx()
-            val spacingPx = spacing.toPx()
-            val offset = cellSizePx / 2
-            val start = positions.first()
-            val end = positions.last()
+            val spacingPx  = spacing.toPx()
+            val offset     = cellSizePx / 2
+            val start      = positions.first()
+            val end        = positions.last()
             val startX = start.col * (cellSizePx + spacingPx) + offset
             val startY = start.row * (cellSizePx + spacingPx) + offset
-            val endX = end.col * (cellSizePx + spacingPx) + offset
-            val endY = end.row * (cellSizePx + spacingPx) + offset
+            val endX   = end.col * (cellSizePx + spacingPx) + offset
+            val endY   = end.row * (cellSizePx + spacingPx) + offset
 
             drawLine(
                 color = Color(0xFFFFD700),
                 start = Offset(startX, startY),
-                end = Offset(startX + (endX - startX) * progress, startY + (endY - startY) * progress),
+                end   = Offset(
+                    startX + (endX - startX) * progress,
+                    startY + (endY - startY) * progress
+                ),
                 strokeWidth = 8.dp.toPx(),
                 pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 4f), 0f)
             )
@@ -387,7 +445,8 @@ private fun BoardCell(
             )
             .border(
                 width = if (isWinCell) 3.dp else 2.dp,
-                color = if (isWinCell) Color(0xFFFFD700) else MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                color = if (isWinCell) Color(0xFFFFD700)
+                else MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
                 shape = RoundedCornerShape(8.dp)
             )
             .clickable(enabled = symbol.isNullOrEmpty() && isClickable) {
@@ -400,9 +459,7 @@ private fun BoardCell(
             Image(
                 painter = painterResource(GameAssets.getSymbolDrawable(symbol)),
                 contentDescription = symbol,
-                modifier = Modifier
-                    .fillMaxSize(0.80f)
-                    .scale(scale),
+                modifier = Modifier.fillMaxSize(0.80f).scale(scale),
                 contentScale = ContentScale.Fit
             )
         }
@@ -437,7 +494,6 @@ private fun InfoPanel(
                 HorizontalDivider()
 
                 gameState?.let { state ->
-                    // Difficulty / Mode info
                     val isAI = state.playerXId == "AI" || state.playerOId == "AI"
                     Text(
                         if (isAI) "🤖 Modo PVE" else "⚔️ Modo PVP",
@@ -454,6 +510,11 @@ private fun InfoPanel(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
+                    Text(
+                        "Mejor de ${state.totalRounds}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
                     if (state.practiceMode) {
                         Text(
                             "📝 Modo práctica",
@@ -464,12 +525,9 @@ private fun InfoPanel(
                 }
 
                 HorizontalDivider()
-
-                // Move history
                 MoveHistoryPanel(movesLog = gameState?.movesLog ?: emptyList())
             }
 
-            // Buttons
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (gameState?.practiceMode == true) {
                     OutlinedButton(
@@ -478,18 +536,16 @@ private fun InfoPanel(
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = MaterialTheme.colorScheme.tertiary
                         )
-                    ) {
-                        Text("↩️ Deshacer movimiento")
-                    }
+                    ) { Text("↩️ Deshacer movimiento") }
                 }
 
                 Button(
                     onClick = onLeave,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("🚪 Abandonar partida")
-                }
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) { Text("🚪 Abandonar partida") }
             }
         }
     }
@@ -516,14 +572,9 @@ private fun MoveHistoryPanel(movesLog: List<String>) {
             )
         } else {
             val listState = rememberLazyListState()
-
-            // Auto-scroll to last item
             LaunchedEffect(movesLog.size) {
-                if (movesLog.isNotEmpty()) {
-                    listState.animateScrollToItem(movesLog.size - 1)
-                }
+                if (movesLog.isNotEmpty()) listState.animateScrollToItem(movesLog.size - 1)
             }
-
             LazyColumn(
                 state = listState,
                 modifier = Modifier
@@ -579,8 +630,18 @@ private fun ConnectionOverlay(title: String, subtitle: String, color: Color, zIn
 
 // ── Round End Overlay ──────────────────────────────────────────────────────
 
+/**
+ * Shown after each individual round.
+ * Displays win/loss/draw result for the round + current match score +
+ * an auto-countdown showing when the next round starts.
+ */
 @Composable
-private fun RoundEndOverlay(roundEnd: RoundEnd, gameState: GameState, gameClient: GameClient) {
+private fun RoundEndOverlay(
+    roundEnd: RoundEnd,
+    gameState: GameState,
+    gameClient: GameClient,
+    isMatchEnd: Boolean
+) {
     val playerId = gameClient.getPlayerId()
     val playerSymbol = when (playerId) {
         gameState.playerXId -> "X"
@@ -589,106 +650,369 @@ private fun RoundEndOverlay(roundEnd: RoundEnd, gameState: GameState, gameClient
     }
 
     val result = when {
-        roundEnd.isDraw -> "draw"
+        roundEnd.isDraw             -> "draw"
         roundEnd.winner == playerSymbol -> "win"
-        else -> "lose"
+        else                        -> "lose"
     }
 
-    val (imageRes, message, bgColor) = when (result) {
-        "win"  -> Triple(GameAssets.winIcon,  "🏆 ¡Ganaste!",  Color(0xFF4CAF50))
-        "lose" -> Triple(GameAssets.loseIcon, "💀 Perdiste",   MaterialTheme.colorScheme.error)
-        else   -> Triple(GameAssets.drawIcon, "🤝 Empate",     Color(0xFFFF9800))
+    val (imageRes, headline, bgColor) = when (result) {
+        "win"  -> Triple(GameAssets.winIcon,  "¡Ganaste la ronda!",  Color(0xFF4CAF50))
+        "lose" -> Triple(GameAssets.loseIcon, "Perdiste la ronda",   MaterialTheme.colorScheme.error)
+        else   -> Triple(GameAssets.drawIcon, "Empate",              Color(0xFFFF9800))
     }
 
+    // Countdown from 3 to 0 while the overlay is visible
+    var countdown by remember { mutableStateOf(3) }
+    LaunchedEffect(Unit) {
+        while (countdown > 0) {
+            delay(1000)
+            countdown--
+        }
+    }
+
+    // Entry animation
     val alpha by animateFloatAsState(
         targetValue = 1f,
-        animationSpec = tween(400),
-        label = "overlayAlpha"
+        animationSpec = tween(350),
+        label = "roundOverlayAlpha"
     )
+    val scale by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = spring(dampingRatio = 0.6f, stiffness = 300f),
+        label = "roundOverlayScale"
+    )
+    var initialScale by remember { mutableStateOf(0.7f) }
+    LaunchedEffect(Unit) { initialScale = 1f }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.72f * alpha))
-            .alpha(alpha),
+            .background(Color.Black.copy(alpha = 0.65f * alpha)),
         contentAlignment = Alignment.Center
     ) {
         Card(
-            modifier = Modifier.width(380.dp),
+            modifier = Modifier
+                .width(360.dp)
+                .scale(scale),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(16.dp),
-            shape = RoundedCornerShape(20.dp)
+            elevation = CardDefaults.cardElevation(20.dp),
+            shape = RoundedCornerShape(24.dp)
         ) {
             Column(
                 modifier = Modifier.padding(32.dp).fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
+                // Result icon
                 Box(
                     modifier = Modifier
-                        .size(80.dp)
+                        .size(88.dp)
                         .clip(RoundedCornerShape(50))
                         .background(bgColor.copy(alpha = 0.15f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
                         painter = painterResource(imageRes),
-                        contentDescription = message,
-                        modifier = Modifier.size(56.dp),
+                        contentDescription = headline,
+                        modifier = Modifier.size(60.dp),
                         contentScale = ContentScale.Fit
                     )
                 }
 
+                // Headline
                 Text(
-                    text = message,
+                    text = headline,
                     style = MaterialTheme.typography.headlineMedium,
                     color = bgColor,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
                 )
 
-                if (roundEnd.reason != null) {
-                    Text(
-                        text = roundEnd.reason,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.tertiary,
-                        textAlign = TextAlign.Center
-                    )
-                }
-
+                // Round info
                 Text(
                     text = "Ronda ${gameState.currentRound} de ${gameState.totalRounds}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f)
                 )
 
-                // Scores
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+
+                // Current match score
+                MatchScoreDisplay(gameState = gameState, playerSymbol = playerSymbol, gameClient = gameClient)
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+
+                // Next round countdown
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(24.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
-                        "${gameState.scores["X"] ?: 0}",
-                        style = MaterialTheme.typography.displaySmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
                     )
-                    Text("–", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
                     Text(
-                        "${gameState.scores["O"] ?: 0}",
-                        style = MaterialTheme.typography.displaySmall,
-                        color = MaterialTheme.colorScheme.secondary,
-                        fontWeight = FontWeight.Bold
+                        text = if (countdown > 0) "Siguiente ronda en ${countdown}s..."
+                        else "Cargando siguiente ronda...",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                     )
                 }
-
-                Text(
-                    text = "La siguiente ronda comenzará pronto...",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                    textAlign = TextAlign.Center
-                )
             }
         }
     }
 }
+
+// ── Match End Overlay ──────────────────────────────────────────────────────
+
+/**
+ * Shown at the end of the entire match.
+ * Displays final win/loss/draw + final score + "returning to menu" countdown.
+ */
+@Composable
+private fun MatchEndOverlay(
+    roundEnd: RoundEnd,
+    gameState: GameState,
+    gameClient: GameClient
+) {
+    val playerId = gameClient.getPlayerId()
+    val playerSymbol = when (playerId) {
+        gameState.playerXId -> "X"
+        gameState.playerOId -> "O"
+        else -> null
+    }
+
+    val result = when {
+        roundEnd.isDraw                 -> "draw"
+        roundEnd.winner == playerSymbol -> "win"
+        else                            -> "lose"
+    }
+
+    val (imageRes, headline, subHeadline, bgColor) = when (result) {
+        "win"  -> Quad(GameAssets.winIcon,  "🏆 ¡VICTORIA!",   "¡Has ganado el match!",        Color(0xFFFFD700))
+        "lose" -> Quad(GameAssets.loseIcon, "💀 DERROTA",       "Has perdido el match",          MaterialTheme.colorScheme.error)
+        else   -> Quad(GameAssets.drawIcon, "🤝 EMPATE",        "El match ha terminado en empate", Color(0xFFFF9800))
+    }
+
+    // Countdown to menu
+    var countdown by remember { mutableStateOf(4) }
+    LaunchedEffect(Unit) {
+        while (countdown > 0) {
+            delay(1000)
+            countdown--
+        }
+    }
+
+    // Entry animation: slide up + fade in
+    val offsetY by animateFloatAsState(
+        targetValue = 0f,
+        animationSpec = spring(dampingRatio = 0.7f, stiffness = 200f),
+        label = "matchEndSlide"
+    )
+    val alpha by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(400),
+        label = "matchEndAlpha"
+    )
+
+    // Pulsating glow on win
+    val pulseAnim = rememberInfiniteTransition(label = "pulse")
+    val pulseAlpha by pulseAnim.animateFloat(
+        initialValue = 0.3f,
+        targetValue = if (result == "win") 0.8f else 0.3f,
+        animationSpec = infiniteRepeatable(tween(900), RepeatMode.Reverse),
+        label = "pulseAlpha"
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.82f * alpha)),
+        contentAlignment = Alignment.Center
+    ) {
+        // Background glow for winner
+        if (result == "win") {
+            Box(
+                modifier = Modifier
+                    .size(400.dp)
+                    .background(
+                        Color(0xFFFFD700).copy(alpha = pulseAlpha * 0.08f),
+                        RoundedCornerShape(50)
+                    )
+            )
+        }
+
+        Card(
+            modifier = Modifier.width(420.dp).alpha(alpha),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(28.dp),
+            shape = RoundedCornerShape(28.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(36.dp).fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Big result icon with colored ring
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(RoundedCornerShape(50))
+                        .border(3.dp, bgColor.copy(alpha = 0.5f), RoundedCornerShape(50))
+                        .background(bgColor.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(imageRes),
+                        contentDescription = headline,
+                        modifier = Modifier.size(68.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+
+                // Main headline
+                Text(
+                    text = headline,
+                    style = MaterialTheme.typography.displaySmall,
+                    color = bgColor,
+                    fontWeight = FontWeight.ExtraBold,
+                    textAlign = TextAlign.Center
+                )
+
+                Text(
+                    text = subHeadline,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                    textAlign = TextAlign.Center
+                )
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 4.dp),
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                )
+
+                // FINAL SCORE (prominent)
+                Text(
+                    text = "Resultado Final",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                )
+                MatchScoreDisplay(
+                    gameState = gameState,
+                    playerSymbol = playerSymbol,
+                    gameClient = gameClient,
+                    large = true
+                )
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+
+                // Return to menu countdown
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    if (countdown > 0) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(22.dp),
+                            strokeWidth = 2.5.dp,
+                            color = bgColor.copy(alpha = 0.7f)
+                        )
+                        Text(
+                            text = "Volviendo al menú en ${countdown}s...",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f)
+                        )
+                    } else {
+                        Text(
+                            text = "Cargando menú...",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ── Match Score Display (shared) ───────────────────────────────────────────
+
+@Composable
+private fun MatchScoreDisplay(
+    gameState: GameState,
+    playerSymbol: String?,
+    gameClient: GameClient,
+    large: Boolean = false
+) {
+    val opponentSymbol = if (playerSymbol == "X") "O" else "X"
+    val isAIGame = gameState.playerXId == "AI" || gameState.playerOId == "AI"
+    val playerLabel = gameClient.getPlayerName() ?: "Tú"
+    val opponentLabel = if (isAIGame) "IA" else (gameClient.opponentName ?: "Oponente")
+
+    val myScore = gameState.scores[playerSymbol] ?: 0
+    val opScore = gameState.scores[opponentSymbol] ?: 0
+
+    val scoreStyle = if (large) MaterialTheme.typography.displayMedium
+    else MaterialTheme.typography.displaySmall
+
+    val nameStyle = if (large) MaterialTheme.typography.bodyLarge
+    else MaterialTheme.typography.bodyMedium
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                playerLabel,
+                style = nameStyle,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                textAlign = TextAlign.Center
+            )
+            Text(
+                "$myScore",
+                style = scoreStyle,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.ExtraBold
+            )
+            Text(
+                "($playerSymbol)",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)
+            )
+        }
+
+        Text(
+            "–",
+            style = MaterialTheme.typography.headlineLarge,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+        )
+
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                opponentLabel,
+                style = nameStyle,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                textAlign = TextAlign.Center
+            )
+            Text(
+                "$opScore",
+                style = scoreStyle,
+                color = MaterialTheme.colorScheme.secondary,
+                fontWeight = FontWeight.ExtraBold
+            )
+            Text(
+                "($opponentSymbol)",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)
+            )
+        }
+    }
+}
+
+// ── Helper ─────────────────────────────────────────────────────────────────
+
+/** Helper data class for 4-value destructuring in Kotlin */
+private data class Quad<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)
