@@ -393,22 +393,22 @@ private fun InfoPanel(
             
             Divider()
             
-            if (gameState != null) {
+            gameState?.let { state ->
                 // Determine which symbol the player controls
                 val playerId = gameClient.getPlayerId()
                 val playerSymbol = when (playerId) {
-                    gameState.playerXId -> "X"
-                    gameState.playerOId -> "O"
+                    state.playerXId -> "X"
+                    state.playerOId -> "O"
                     else -> null
                 }
                 
                 // Check if it's the player's turn
-                val isPlayerTurn = playerSymbol == gameState.currentPlayer
+                val isPlayerTurn = playerSymbol == state.currentPlayer
                 
                 // Turn indicator
                 val turnText = when {
                     isPlayerTurn -> "🎮 Your Turn"
-                    gameState.playerXId == "AI" || gameState.playerOId == "AI" -> "🤖 AI is thinking..."
+                    state.playerXId == "AI" || state.playerOId == "AI" -> "🤖 AI is thinking..."
                     else -> "⏳ ${gameClient.opponentName ?: "Opponent"}'s Turn"
                 }
                 
@@ -449,7 +449,7 @@ private fun InfoPanel(
                 
                 // Score display
                 Text(
-                    text = "Round ${gameState.currentRound}",
+                    text = "Round ${state.currentRound}",
                     style = MaterialTheme.typography.bodyLarge
                 )
                 
@@ -460,19 +460,19 @@ private fun InfoPanel(
                     Column {
                         Text("You", style = MaterialTheme.typography.bodyMedium)
                         Text(
-                            text = "${gameState.scores[playerSymbol] ?: 0}",
+                            text = "${state.scores[playerSymbol] ?: 0}",
                             style = MaterialTheme.typography.headlineMedium,
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
                     Column {
                         val opponentSymbol = if (playerSymbol == "X") "O" else "X"
-                        val isAI = gameState.playerXId == "AI" || gameState.playerOId == "AI"
+                        val isAI = state.playerXId == "AI" || state.playerOId == "AI"
                         val opponentLabel = if (isAI) "AI" else (gameClient.opponentName ?: "Opponent")
                         
                         Text(opponentLabel, style = MaterialTheme.typography.bodyMedium)
                         Text(
-                            text = "${gameState.scores[opponentSymbol] ?: 0}",
+                            text = "${state.scores[opponentSymbol] ?: 0}",
                             style = MaterialTheme.typography.headlineMedium,
                             color = MaterialTheme.colorScheme.secondary
                         )

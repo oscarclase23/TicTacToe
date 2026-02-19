@@ -54,9 +54,7 @@ fun App() {
                             gameClient = gameClient,
                             onLogin = { name ->
                                 username = name
-                                scope.launch {
-                                    gameClient.connect("localhost", 5678, name, allowResume = true)
-                                }
+                                gameClient.connect("localhost", 5678, name, allowResume = true)
                             }
                         )
                         is Screen.Menu -> MainMenuScreen(gameClient)
@@ -72,9 +70,7 @@ fun App() {
                         canRetry = state.canRetry,
                         onRetry = {
                             // Retry connection using scope from composable level
-                            scope.launch {
                                 gameClient.connect("localhost", 5678, username, allowResume = true)
-                            }
                         },
                         onBack = {
                             gameClient.navigateTo(Screen.Menu)
