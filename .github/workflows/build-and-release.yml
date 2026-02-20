@@ -25,24 +25,30 @@ jobs:
 
       - name: Build Windows Installers
         shell: cmd
-        run: .\gradlew.bat :composeApp:packageMsi
+        run: .\gradlew.bat :composeApp:packageMsi :composeApp:packageDistributionForCurrentOS
 
       # Preparar artefactos para release
       - name: Prepare Windows Artifacts
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path artifacts
-          # Buscar y copiar .msi
+          # Buscar .msi en la carpeta msi
           $msiFiles = Get-ChildItem -Path composeApp\build\compose\binaries\main\msi -Filter "*.msi" -Recurse -ErrorAction SilentlyContinue
           foreach ($file in $msiFiles) {
             Copy-Item $file.FullName -Destination "artifacts\TicTacToe-${{ github.ref_name }}.msi"
+            Write-Host "Copiado: $($file.FullName)"
           }
-          # Buscar y copiar .exe (generados junto con MSI)
-          $exeFiles = Get-ChildItem -Path composeApp\build\compose\binaries\main -Filter "*.exe" -Recurse -ErrorAction SilentlyContinue
+          # Buscar .exe en distributions (directorio portable)
+          $exeFiles = Get-ChildItem -Path composeApp\build\compose\distributions -Filter "*.exe" -Recurse -ErrorAction SilentlyContinue
           foreach ($file in $exeFiles) {
-            if ($file.Name -notmatch "gradlew") {
-              Copy-Item $file.FullName -Destination "artifacts\TicTacToe-${{ github.ref_name }}.exe"
-            }
+            Copy-Item $file.FullName -Destination "artifacts\TicTacToe-${{ github.ref_name }}.exe"
+            Write-Host "Copiado: $($file.FullName)"
+          }
+          # También buscar en app (en algunos casos)
+          $appExe = Get-ChildItem -Path composeApp\build\compose\binaries\main\app -Filter "*.exe" -Recurse -ErrorAction SilentlyContinue
+          foreach ($file in $appExe) {
+            Copy-Item $file.FullName -Destination "artifacts\TicTacToe-${{ github.ref_name }}.exe"
+            Write-Host "Copiado: $($file.FullName)"
           }
           # Listar lo que se preparó
           Write-Host "Artefactos preparados:"
