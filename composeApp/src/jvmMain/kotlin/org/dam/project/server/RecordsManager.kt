@@ -14,8 +14,12 @@ import kotlin.concurrent.write
 /**
  * Thread-safe manager for player records persistence.
  *
- * FIX: winVsAI and gamesVsAI now use Map<String, Int> to avoid
+ * FIX 1: winVsAI and gamesVsAI now use Map<String, Int> to avoid
  * kotlinx.serialization issues with enum keys in maps.
+ *
+ * FIX 2: En empates PVE, winner llega como "DRAW" (no como nombre de jugador).
+ * Se añade filtro winner != "DRAW" para evitar crear un registro falso
+ * para un jugador llamado "DRAW".
  */
 class RecordsManager(private val filePath: String = "records.json") {
 
@@ -53,8 +57,16 @@ class RecordsManager(private val filePath: String = "records.json") {
             (durationSeconds * loserMoves.size / totalMoves) else durationSeconds / 2
 
         if (isDraw) {
-            if (winner != "AI") updatePlayerStats(winner, false, true, isPVE, difficulty, boardSize, winnerMoves, winnerTime)
-            if (loser != "AI") updatePlayerStats(loser, false, true, isPVE, difficulty, boardSize, loserMoves, loserTime)
+            // FIX: Filtrar tanto "AI" como "DRAW" para evitar crear registros falsos.
+            // En empates PVE, winner llega como "DRAW" desde handleMatchEnd,
+            // y loser puede ser "AI". Sin este filtro se crearía un registro
+            // para un jugador llamado "DRAW".
+            if (winner != "AI" && winner != "DRAW") {
+                updatePlayerStats(winner, false, true, isPVE, difficulty, boardSize, winnerMoves, winnerTime)
+            }
+            if (loser != "AI" && loser != "DRAW") {
+                updatePlayerStats(loser, false, true, isPVE, difficulty, boardSize, loserMoves, loserTime)
+            }
         } else {
             if (winner != "AI") updatePlayerStats(winner, true, false, isPVE, difficulty, boardSize, winnerMoves, winnerTime)
             if (loser != "AI") updatePlayerStats(loser, false, false, isPVE, difficulty, boardSize, loserMoves, loserTime)
@@ -103,14 +115,14 @@ class RecordsManager(private val filePath: String = "records.json") {
         val newWinsByBoardSize = current.winsByBoardSize.toMutableMap()
         if (isWinner) newWinsByBoardSize[boardSize] = (newWinsByBoardSize[boardSize] ?: 0) + 1
 
-        // Wins vs AI by difficulty — String keys to avoid enum serialization issues
+        // Wins vs AI difficulty — String keys to avoid enum serialization issues
         val newWinVsAI = current.winVsAI.toMutableMap()
         if (isWinner && isPVE && opponentDifficulty != null) {
             val key = opponentDifficulty.name
             newWinVsAI[key] = (newWinVsAI[key] ?: 0) + 1
         }
 
-        // Games played vs AI by difficulty
+        // Games played vs AI difficulty
         val newGamesVsAI = current.gamesVsAI.toMutableMap()
         if (isPVE && opponentDifficulty != null) {
             val key = opponentDifficulty.name

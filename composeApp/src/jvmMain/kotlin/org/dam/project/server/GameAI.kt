@@ -15,20 +15,22 @@ import org.dam.project.network.Position
  *           - 4x4: depth 7 with move ordering → very strong.
  *           - 5x5: depth 5 with move ordering + heuristic → strong but beatable.
  *
- * Key fixes vs previous version:
- *   1. Score formula corrected: winning sooner = higher score (depth remaining, not depth left).
- *      OLD (buggy): score = 1000 + depth  →  depth counts DOWN, so winning at depth=0 = 1000,
- *                                             winning at depth=5 = 1005 (prefers LATE wins — wrong)
- *      NEW (fixed): score = 1000 + depthRemaining  →  winning with more moves to spare = higher score.
+ * FIX CRÍTICO (Bug invencibilidad HARD):
+ *   TicTacToeGame.makeMove() alterna currentPlayer internamente basándose en el
+ *   estado previo de currentPlayer, NO en el jugador que realmente jugó. Esto
+ *   significa que si el juego copiado tiene currentPlayer desincronizado con el
+ *   jugador que debe mover en el árbol minimax, la alternancia queda invertida
+ *   para todos los nodos hijos → evaluaciones incorrectas → la IA comete errores.
  *
- *   2. minimax() now derives isMaximizing internally from the current player on the board,
- *      completely eliminating the possibility of the AI playing against itself.
+ *   SOLUCIÓN: Llamar game.setCurrentPlayer(currentPlayer) antes de cada
+ *   game.makeMove() en el árbol, para sincronizar el estado interno del juego
+ *   con el jugador que realmente debe mover en ese nodo del árbol.
  *
- *   3. Move ordering: center > corners > edges, evaluated before minimax to help alpha-beta
- *      prune more aggressively on larger boards.
- *
- *   4. Immediate win/block detection before full minimax — guarantees the AI never misses
- *      a 1-move win or a 1-move block even if alpha-beta cuts happen to skip it.
+ * Otras correcciones previas:
+ *   1. Score formula: winning sooner = higher score (depth remaining).
+ *   2. minimax() derives isMaximizing from the current player on the board.
+ *   3. Move ordering: center > corners > edges.
+ *   4. Immediate win/block detection before full minimax.
  */
 object GameAI {
 
@@ -99,9 +101,12 @@ object GameAI {
     /**
      * Finds a move that immediately wins the game for [player], or null if none exists.
      * This is O(n) over valid moves and guarantees we never miss a 1-move win.
+     *
+     * FIX: Sync currentPlayer before makeMove to avoid alternation bugs.
      */
     private fun findImmediateWin(game: TicTacToeGame, player: String): Position? {
         for (move in getValidMoves(game)) {
+            game.setCurrentPlayer(player) // FIX: sincronizar turno
             game.makeMove(move.row, move.col, player)
             val wins = game.checkWinner() != null
             game.undoLastMove()
@@ -112,13 +117,23 @@ object GameAI {
 
     // ── Minimax root ─────────────────────────────────────────────────────────
 
+    /**
+     * FIX: Antes de iniciar la búsqueda, sincronizar currentPlayer del juego
+     * copiado con aiPlayer. TicTacToeGame.makeMove() alterna currentPlayer
+     * basándose en su estado previo, así que si no está sincronizado desde
+     * el principio, toda la alternancia del árbol queda invertida.
+     */
     private fun minimaxRoot(game: TicTacToeGame, aiPlayer: String, depth: Int): Position {
+        // FIX CRÍTICO: Sincronizar el turno del juego copiado con la IA
+        game.setCurrentPlayer(aiPlayer)
+
         val moves = getOrderedMoves(game, aiPlayer)
 
         var bestScore = Int.MIN_VALUE
         var bestMove = moves.first()
 
         for (move in moves) {
+            game.setCurrentPlayer(aiPlayer) // FIX: re-sincronizar antes de cada movimiento
             game.makeMove(move.row, move.col, aiPlayer)
             // After AI plays, it's opponent's turn → isMaximizing = false
             val score = minimax(game, depth - 1, false, aiPlayer, Int.MIN_VALUE, Int.MAX_VALUE)
@@ -146,6 +161,13 @@ object GameAI {
      *   +1000 + depth  →  AI wins  (higher depth remaining = sooner win = better)
      *   -1000 - depth  →  opponent wins  (higher depth remaining = sooner loss = worse)
      *   0              →  draw or depth exhausted without winner
+     *
+     * FIX CRÍTICO: Llamar game.setCurrentPlayer(currentPlayer) antes de cada
+     * game.makeMove() para que la alternancia interna de TicTacToeGame quede
+     * correctamente sincronizada con el jugador del nodo actual del árbol.
+     * Sin esto, si el juego copiado tiene currentPlayer desincronizado,
+     * makeMove() alterna al jugador equivocado y todas las evaluaciones
+     * de los nodos hijos son incorrectas.
      */
     private fun minimax(
         game: TicTacToeGame,
@@ -173,6 +195,8 @@ object GameAI {
         return if (isMaximizing) {
             var maxScore = Int.MIN_VALUE
             for (move in moves) {
+                // FIX CRÍTICO: Sincronizar el turno antes de cada movimiento
+                game.setCurrentPlayer(currentPlayer)
                 game.makeMove(move.row, move.col, currentPlayer)
                 val score = minimax(game, depth - 1, false, aiPlayer, currentAlpha, currentBeta)
                 game.undoLastMove()
@@ -184,6 +208,8 @@ object GameAI {
         } else {
             var minScore = Int.MAX_VALUE
             for (move in moves) {
+                // FIX CRÍTICO: Sincronizar el turno antes de cada movimiento
+                game.setCurrentPlayer(currentPlayer)
                 game.makeMove(move.row, move.col, currentPlayer)
                 val score = minimax(game, depth - 1, true, aiPlayer, currentAlpha, currentBeta)
                 game.undoLastMove()
@@ -207,6 +233,8 @@ object GameAI {
      *   3. Center cell (score 50)
      *   4. Corner cells (score 30)
      *   5. Edge cells (score 10)
+     *
+     * FIX: Sincronizar currentPlayer antes de cada makeMove de prueba.
      */
     private fun getOrderedMoves(game: TicTacToeGame, player: String): List<Position> {
         val moves = getValidMoves(game)
@@ -222,12 +250,14 @@ object GameAI {
 
         return moves.sortedByDescending { move ->
             // Check if this move wins immediately
+            game.setCurrentPlayer(player) // FIX: sincronizar antes de prueba
             game.makeMove(move.row, move.col, player)
             val winsNow = game.checkWinner() != null
             game.undoLastMove()
             if (winsNow) return@sortedByDescending 1000
 
             // Check if this move blocks opponent's immediate win
+            game.setCurrentPlayer(opp) // FIX: sincronizar antes de prueba
             game.makeMove(move.row, move.col, opp)
             val blocksWin = game.checkWinner() != null
             game.undoLastMove()

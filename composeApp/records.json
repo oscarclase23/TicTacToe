@@ -3,14 +3,14 @@
         {
             "playerName": "oscar",
             "wins": 10,
-            "losses": 15,
-            "draws": 1,
+            "losses": 17,
+            "draws": 2,
             "bestStreak": 5,
             "pvpWins": 2,
-            "pvpLosses": 4,
+            "pvpLosses": 5,
             "pveWins": 8,
-            "pveLosses": 11,
-            "pveDraws": 1,
+            "pveLosses": 12,
+            "pveDraws": 2,
             "winsByBoardSize": {
                 "3": 10
             },
@@ -19,24 +19,25 @@
             },
             "gamesVsAI": {
                 "EASY": 16,
-                "HARD": 4
+                "HARD": 5,
+                "MEDIUM": 1
             },
-            "totalMoves": 165,
-            "totalMoveTimeSeconds": 296,
+            "totalMoves": 187,
+            "totalMoveTimeSeconds": 316,
             "favoriteMove": {
                 "row": 1,
                 "col": 1
             },
             "moveFrequencies": {
-                "2,0": 21,
-                "2,2": 18,
+                "2,0": 22,
+                "2,2": 21,
                 "0,1": 22,
-                "1,0": 15,
-                "0,2": 18,
-                "0,0": 16,
-                "1,2": 13,
-                "2,1": 15,
-                "1,1": 27
+                "1,0": 19,
+                "0,2": 23,
+                "0,0": 18,
+                "1,2": 14,
+                "2,1": 20,
+                "1,1": 28
             }
         },
         {
@@ -121,6 +122,16 @@
                 "2,0": 1,
                 "0,0": 2,
                 "2,2": 1
+            }
+        },
+        {
+            "playerName": "Unknown",
+            "wins": 1,
+            "currentStreak": 1,
+            "bestStreak": 1,
+            "pvpWins": 1,
+            "winsByBoardSize": {
+                "3": 1
             }
         }
     ]

@@ -276,7 +276,7 @@ class GameServer(val config: ServerConfig) {
 
     private suspend fun handleMatchEnd(session: GameSession, matchEnd: MatchEnd) {
         val matchId = session.matchId
-        println("[GameServer] Match ended (raw): winner=${matchEnd.winner}")
+        println("[GameServer] Match ended (Raw): winner=${matchEnd.winner}")
 
         // Mark session as finished BEFORE broadcasting to prevent any further moves
         session.stopAll()
@@ -292,7 +292,7 @@ class GameServer(val config: ServerConfig) {
         val winnerName = if (isDraw) "DRAW" else getPlayerName(winnerId)
         val loserName = getPlayerName(loserId)
 
-        println("[GameServer] Broadcasting MatchEnd: winner=$winnerName (was id=$winnerId)")
+        println("[GameServer] Broadcasting MatchEnd with WinnerName=$winnerName")
 
         // Broadcast with NAMES so the client can correctly identify win/loss
         val finalMatchEnd = MatchEnd(
@@ -465,7 +465,7 @@ class GameServer(val config: ServerConfig) {
         val timestamp: Long = System.currentTimeMillis()
     )
 
-    fun queuePlayer(playerId: String, boardSize: Int, timeLimit: Int, totalRounds: Int, turboMode: Boolean = false) { // turboMode explicit
+    fun queuePlayer(playerId: String, boardSize: Int, timeLimit: Int, totalRounds: Int, turboMode: Boolean = false) {
         cancelQueue(playerId)
         val queue = waitingQueues.getOrPut(boardSize) { java.util.concurrent.ConcurrentLinkedQueue() }
         queue.add(QueueEntry(playerId, timeLimit, totalRounds, turboMode))
@@ -492,17 +492,17 @@ class GameServer(val config: ServerConfig) {
         val matchId = UUID.randomUUID().toString()
         println("[GameServer] Creating PVP match: $matchId between ${e1.playerId} and ${e2.playerId}")
 
-        // Negotiate time limit: average, but if either chose turbo → use turbo (10s)
-        val finalTimeLimit = when {
-            e1.turboMode || e2.turboMode -> 10
-            else -> (e1.timeLimit + e2.timeLimit) / 2
-        }
+        // FIX: Turbo solo si AMBOS jugadores eligieron turbo.
+        // Antes (bug): e1.turboMode || e2.turboMode → si UNO elige turbo, se imponía a ambos.
+        // Ahora (fix): e1.turboMode && e2.turboMode → requiere acuerdo de los dos jugadores.
+        val isTurbo = e1.turboMode && e2.turboMode
+        val finalTimeLimit = if (isTurbo) 10 else (e1.timeLimit + e2.timeLimit) / 2
 
         // Negotiate rounds: average, rounded to nearest valid odd value (3, 5, 7)
         val rawAvgRounds = (e1.totalRounds + e2.totalRounds) / 2
         val finalRounds = nearestValidRounds(rawAvgRounds)
 
-        println("[GameServer] Negotiated: timeLimit=$finalTimeLimit, rounds=$finalRounds (from ${e1.timeLimit}/${e2.timeLimit}, ${e1.totalRounds}/${e2.totalRounds})")
+        println("[GameServer] Negotiated: timeLimit=$finalTimeLimit, rounds=$finalRounds, turbo=$isTurbo (from turbo=${e1.turboMode}/${e2.turboMode}, time=${e1.timeLimit}/${e2.timeLimit}, rounds=${e1.totalRounds}/${e2.totalRounds})")
 
         val config = GameConfig(
             boardSize = boardSize,
@@ -510,7 +510,7 @@ class GameServer(val config: ServerConfig) {
             totalRounds = finalRounds,
             difficulty = Difficulty.MEDIUM,
             timeLimit = finalTimeLimit,
-            turboMode = e1.turboMode || e2.turboMode
+            turboMode = isTurbo  // FIX: era e1.turboMode || e2.turboMode
         )
 
         val p1Starts = kotlin.random.Random.nextBoolean()
@@ -538,11 +538,6 @@ class GameServer(val config: ServerConfig) {
 
     /**
      * Rounds a value to the nearest valid "best of" option: 3, 5, or 7.
-     * Examples: 4 → 3 or 5 (equidistant → picks lower, i.e. 3)... actually we pick 5 as midpoint.
-     *   avg(3,5)=4 → 3 (closer to 3? No, equidistant. Pick 5 as tiebreak for longer games)
-     *   avg(3,7)=5 → 5 ✓
-     *   avg(5,7)=6 → 7 (closer to 7)
-     *   avg(3,3)=3 → 3 ✓
      */
     private fun nearestValidRounds(value: Int): Int {
         val valid = listOf(3, 5, 7)
