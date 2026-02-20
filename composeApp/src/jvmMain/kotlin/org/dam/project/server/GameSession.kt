@@ -143,8 +143,6 @@ class GameSession(
     fun checkMatchEnd(): MatchEnd? {
         val xScore = scores[playerX] ?: 0
         val oScore = scores[playerO] ?: 0
-        val roundsPlayed = currentRound - 1  // currentRound is incremented AFTER nextRound(), so -1 for played count
-        val roundsRemaining = config.totalRounds - roundsPlayed
         val winsNeeded = (config.totalRounds / 2) + 1  // Majority: 2 for BO3, 3 for BO5, 4 for BO7
 
         // Case 1: One player has already secured the majority (can't be caught)
@@ -161,8 +159,10 @@ class GameSession(
             )
         }
 
-        // Case 2: All rounds played (draw or tie)
-        if (currentRound > config.totalRounds) {
+        // Case 2: All rounds played — currentRound is still the CURRENT round (not yet incremented)
+        // when checkMatchEnd() is called right after checkRoundEnd(). So "all rounds played" means
+        // currentRound == totalRounds (we are ON the last round and it just ended).
+        if (currentRound >= config.totalRounds) {
             val winner = when {
                 xScore > oScore -> playerX
                 oScore > xScore -> playerO

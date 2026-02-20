@@ -306,7 +306,10 @@ class GameClient(
                     }
 
                     scope.launch(Dispatchers.Main) {
-                        delay(4500)
+                        // Overlay appears after 900ms delay (line animation), then shows
+                        // a 3s countdown (3..2..1..0). Total: 900 + 3000 + ~600 buffer = 4500ms
+                        // We use 5000ms so the "0" is visible briefly before navigating away.
+                        delay(5000)
                         isMatchEndPending = false
                         _uiState.value = AppUiState.Content(Screen.Menu)
                         _currentGameState.value = null

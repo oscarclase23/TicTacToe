@@ -53,6 +53,19 @@ fun GameScreen(gameClient: GameClient, matchId: String) {
     // Determine if the current roundEndResult is a match-end overlay
     val isMatchEnd = roundEndResult?.reason?.contains("Fin del Match") == true
 
+    // Delay the overlay card so the winning line has time to animate fully before
+    // the result card appears. roundEndResult arrives → line starts drawing (700ms).
+    // We wait 900ms so the player clearly sees the line, then show the card.
+    var showOverlay by remember { mutableStateOf(false) }
+    LaunchedEffect(roundEndResult) {
+        if (roundEndResult != null) {
+            delay(900)
+            showOverlay = true
+        } else {
+            showOverlay = false
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier.fillMaxSize().padding(24.dp),
@@ -179,7 +192,7 @@ fun GameScreen(gameClient: GameClient, matchId: String) {
         }
 
         // Round-end overlay (not match-end)
-        if (roundEndResult != null && gameState != null && !isMatchEnd) {
+        if (showOverlay && roundEndResult != null && gameState != null && !isMatchEnd) {
             Box(modifier = Modifier.fillMaxSize().zIndex(1000f)) {
                 RoundEndOverlay(
                     roundEnd = roundEndResult!!,
@@ -191,7 +204,7 @@ fun GameScreen(gameClient: GameClient, matchId: String) {
         }
 
         // Match-end overlay (higher z than round-end)
-        if (roundEndResult != null && gameState != null && isMatchEnd) {
+        if (showOverlay && roundEndResult != null && gameState != null && isMatchEnd) {
             Box(modifier = Modifier.fillMaxSize().zIndex(2000f)) {
                 MatchEndOverlay(
                     roundEnd = roundEndResult!!,
@@ -661,8 +674,9 @@ private fun RoundEndOverlay(
         else   -> Triple(GameAssets.drawIcon, "Empate",              Color(0xFFFF9800))
     }
 
-    // Countdown from 3 to 0 while the overlay is visible
-    var countdown by remember { mutableStateOf(3) }
+    // Countdown: server waits 3s before next round, but overlay appears ~0.9s late,
+    // so we start from 2 to stay roughly in sync with the actual server transition.
+    var countdown by remember { mutableStateOf(2) }
     LaunchedEffect(Unit) {
         while (countdown > 0) {
             delay(1000)
@@ -795,8 +809,10 @@ private fun MatchEndOverlay(
         else   -> Quad(GameAssets.drawIcon, "🤝 EMPATE",        "El match ha terminado en empate", Color(0xFFFF9800))
     }
 
-    // Countdown to menu
-    var countdown by remember { mutableStateOf(4) }
+    // Overlay appears ~900ms after MATCH_END (line animation delay).
+    // Client navigates away at 5000ms total → overlay visible for ~4100ms.
+    // Countdown starts at 3: 3..2..1..0, then a moment of "0" before the screen changes.
+    var countdown by remember { mutableStateOf(3) }
     LaunchedEffect(Unit) {
         while (countdown > 0) {
             delay(1000)

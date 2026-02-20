@@ -222,9 +222,9 @@ class GameServer(val config: ServerConfig) {
             return
         }
 
-        // 1. Process move to update board
         val moveResult = session.makeMove(playerId, position)
         println("[GameServer] Move result: valid=${moveResult.valid}, player=${moveResult.player}")
+
         broadcastToGame(matchId, MessageType.MOVE_RESULT, json.encodeToString(moveResult))
 
         if (!moveResult.valid) {
@@ -235,16 +235,16 @@ class GameServer(val config: ServerConfig) {
         // Stop timer immediately after a valid move
         session.stopTimer()
 
-        // 2. Check for Round End (Winner/Draw) -> Updates Scores inside session!
+        // FIX: Check round end BEFORE broadcasting GAME_STATE so the state
+        // includes the updated score. checkRoundEnd() updates session.scores internally.
         val roundEnd = session.checkRoundEnd()
 
-        // 3. NOW broadcast GameState (will contain updated board AND updated scores if someone won)
+        // Now broadcast GAME_STATE with the already-updated score
         val gameState = session.getGameState()
-        println("[GameServer] Broadcasting game state (RoundEnd=${roundEnd?.winner})")
+        println("[GameServer] Broadcasting game state (roundEnd=${roundEnd?.winner})")
         broadcastToGame(matchId, MessageType.GAME_STATE, json.encodeToString(gameState))
         persistenceManager.save(activeGames)
 
-        // 4. If round ended, handle it
         if (roundEnd != null) {
             println("[GameServer] Round ended: winner=${roundEnd.winner}")
             broadcastToGame(matchId, MessageType.ROUND_END, json.encodeToString(roundEnd))
@@ -254,10 +254,15 @@ class GameServer(val config: ServerConfig) {
             if (matchEnd != null) {
                 handleMatchEnd(session, matchEnd)
             } else {
-                // ... rest of logic
+                // Small delay for the round-end overlay to show, then next round
                 delay(3000)
-                if (!activeGames.containsKey(matchId) || session.isFinished) return
-                
+
+                // Re-check: session might have been removed during the delay (e.g., surrender)
+                if (!activeGames.containsKey(matchId) || session.isFinished) {
+                    println("[GameServer] Session $matchId ended during round transition, aborting")
+                    return
+                }
+
                 session.nextRound()
                 broadcastToGame(matchId, MessageType.GAME_STATE, json.encodeToString(session.getGameState()))
                 checkAndTriggerAIMove(session)
@@ -271,37 +276,32 @@ class GameServer(val config: ServerConfig) {
 
     private suspend fun handleMatchEnd(session: GameSession, matchEnd: MatchEnd) {
         val matchId = session.matchId
-        println("[GameServer] Match ended (Raw): winner=${matchEnd.winner}")
+        println("[GameServer] Match ended (raw): winner=${matchEnd.winner}")
 
-        // Mark session as finished
+        // Mark session as finished BEFORE broadcasting to prevent any further moves
         session.stopAll()
 
-        // FIX: Verify logic: matchEnd.winner comes from session (ID). Client expects NAME.
-        // We must convert ID to Name before broadcasting!
+        // FIX: matchEnd.winner arrives as a player ID (UUID or "AI" or "DRAW").
+        // The client compares matchEnd.winner against localPlayerName (e.g. "oscar").
+        // We MUST convert the winner ID to a player NAME before broadcasting.
         val isDraw = matchEnd.winner == "DRAW"
-        val winnerId = if (isDraw) session.playerX else matchEnd.winner // If draw, ID irrelevant for generic winner field
-        
-        // Resolve names
-        val winnerName = if (isDraw) "DRAW" else getPlayerName(winnerId)
-        
-        // Create corrected MatchEnd with NAME
-        val finalMatchEnd = matchEnd.copy(
-            winner = winnerName,
-            score = matchEnd.score.mapKeys { getPlayerName(it.key) } // Remap IDs to Names for score map too if needed?
-            // Actually score usually keys by Symbol or ID? GameState uses X/O. MatchEnd info says "score: Map<String, Int>".
-            // Let's rely on GameState for scores, MatchEnd for just the winner text. 
-            // But let's send correct Winner Name.
-        )
-        
-        println("[GameServer] Broadcasting MatchEnd with WinnerName=$winnerName")
-        broadcastToGame(matchId, MessageType.MATCH_END, json.encodeToString(finalMatchEnd))
-
-        broadcastToGame(matchId, MessageType.MATCH_END, json.encodeToString(finalMatchEnd))
-
+        val winnerId = if (isDraw) session.playerX else matchEnd.winner
         val loserId = if (isDraw) session.playerO else
             if (winnerId == session.playerX) session.playerO else session.playerX
 
+        val winnerName = if (isDraw) "DRAW" else getPlayerName(winnerId)
         val loserName = getPlayerName(loserId)
+
+        println("[GameServer] Broadcasting MatchEnd: winner=$winnerName (was id=$winnerId)")
+
+        // Broadcast with NAMES so the client can correctly identify win/loss
+        val finalMatchEnd = MatchEnd(
+            winner = winnerName,
+            score = matchEnd.score,
+            reason = matchEnd.reason
+        )
+        broadcastToGame(matchId, MessageType.MATCH_END, json.encodeToString(finalMatchEnd))
+
         val duration = (System.currentTimeMillis() - session.matchStartTime) / 1000
         val winnerMoves = session.matchMoves.filter { it.first == winnerId }.map { it.second }
         val loserMoves = session.matchMoves.filter { it.first == loserId }.map { it.second }
@@ -396,11 +396,17 @@ class GameServer(val config: ServerConfig) {
             println("[GameServer] Timeout for match $matchId")
 
             val currentPlayer = session.game.getCurrentPlayer()
+            // The player whose turn it was loses → the OTHER player wins
             val winnerSymbol = if (currentPlayer == "X") "O" else "X"
             val winnerId = session.getPlayerId(winnerSymbol)
 
+            // Update score FIRST
             session.scores[winnerId] = (session.scores[winnerId] ?: 0) + 1
             println("[GameServer] Timeout! Winner is $winnerSymbol ($winnerId)")
+
+            // FIX: Broadcast GAME_STATE with updated score BEFORE ROUND_END
+            // so the round-end overlay shows the correct score (e.g. 0-1 not 0-0)
+            broadcastToGame(matchId, MessageType.GAME_STATE, json.encodeToString(session.getGameState()))
 
             val roundEnd = RoundEnd(winner = winnerSymbol, isDraw = false, reason = "Tiempo agotado")
             broadcastToGame(matchId, MessageType.ROUND_END, json.encodeToString(roundEnd))

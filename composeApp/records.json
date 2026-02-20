@@ -2,41 +2,41 @@
     "records": [
         {
             "playerName": "oscar",
-            "wins": 9,
-            "losses": 11,
+            "wins": 10,
+            "losses": 15,
             "draws": 1,
             "bestStreak": 5,
             "pvpWins": 2,
             "pvpLosses": 4,
-            "pveWins": 7,
-            "pveLosses": 7,
+            "pveWins": 8,
+            "pveLosses": 11,
             "pveDraws": 1,
             "winsByBoardSize": {
-                "3": 9
+                "3": 10
             },
             "winVsAI": {
-                "EASY": 7
+                "EASY": 8
             },
             "gamesVsAI": {
-                "EASY": 12,
-                "HARD": 3
+                "EASY": 16,
+                "HARD": 4
             },
-            "totalMoves": 143,
-            "totalMoveTimeSeconds": 275,
+            "totalMoves": 165,
+            "totalMoveTimeSeconds": 296,
             "favoriteMove": {
                 "row": 1,
                 "col": 1
             },
             "moveFrequencies": {
-                "2,0": 20,
-                "2,2": 15,
-                "0,1": 20,
-                "1,0": 11,
-                "0,2": 14,
-                "0,0": 14,
-                "1,2": 12,
-                "2,1": 12,
-                "1,1": 25
+                "2,0": 21,
+                "2,2": 18,
+                "0,1": 22,
+                "1,0": 15,
+                "0,2": 18,
+                "0,0": 16,
+                "1,2": 13,
+                "2,1": 15,
+                "1,1": 27
             }
         },
         {

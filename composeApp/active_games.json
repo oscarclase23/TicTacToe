@@ -33,5 +33,42 @@
             "AI": 0,
             "5abeda1d-c1af-4aef-bb2b-2eee74743ccc": 0
         }
+    },
+    {
+        "matchId": "097700b7-4069-4bfd-8b60-6560533f085c",
+        "config": {
+            "boardSize": 3,
+            "winLength": 3,
+            "totalRounds": 3,
+            "difficulty": "MEDIUM",
+            "timeLimit": 10,
+            "turboMode": true
+        },
+        "playerX": "20282257-740d-401d-b076-c63b67c98429",
+        "playerO": "bbbb6b97-cbb1-42a1-b227-020d9527f7bb",
+        "isAIGame": false,
+        "matchStartTime": 1771592892031,
+        "boardState": [
+            [
+                "",
+                "",
+                ""
+            ],
+            [
+                "",
+                "X",
+                ""
+            ],
+            [
+                "",
+                "",
+                ""
+            ]
+        ],
+        "currentPlayer": "O",
+        "scores": {
+            "20282257-740d-401d-b076-c63b67c98429": 0,
+            "bbbb6b97-cbb1-42a1-b227-020d9527f7bb": 0
+        }
     }
 ]
