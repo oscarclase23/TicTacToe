@@ -26,7 +26,7 @@ fun WaitingScreen(gameClient: GameClient) {
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Text(
-                text = "Searching for Opponent...",
+                text = "Buscando oponente...",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
@@ -48,7 +48,7 @@ fun WaitingScreen(gameClient: GameClient) {
                     containerColor = MaterialTheme.colorScheme.error
                 )
             ) {
-                Text("Cancel")
+                Text("Cancelar")
             }
         }
     }

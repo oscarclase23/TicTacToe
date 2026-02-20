@@ -56,12 +56,12 @@ fun ErrorScreen(
                                 containerColor = MaterialTheme.colorScheme.primary
                             )
                         ) {
-                            Text("Retry")
+                            Text("Reintentar")
                         }
                     }
                     
                     OutlinedButton(onClick = onBack) {
-                        Text("Back to Menu")
+                        Text("Volver al Menú")
                     }
                 }
             }

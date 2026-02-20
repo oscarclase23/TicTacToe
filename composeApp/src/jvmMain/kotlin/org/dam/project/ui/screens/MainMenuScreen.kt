@@ -32,13 +32,13 @@ fun MainMenuScreen(gameClient: GameClient) {
         ) {
             // Title
             Text(
-                text = "Medieval Battle",
+                text = "Batalla Medieval",
                 style = MaterialTheme.typography.displayLarge,
                 color = MaterialTheme.colorScheme.primary
             )
             
             Text(
-                text = "Welcome, ${gameClient.getPlayerName() ?: "Warrior"}",
+                text = "Bienvenido, ${gameClient.getPlayerName() ?: "Guerrero"}",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
@@ -47,7 +47,7 @@ fun MainMenuScreen(gameClient: GameClient) {
             
             // Versus Player button
             MenuButton(
-                text = "Versus Player",
+                text = "Contra Jugador",
                 icon = GameAssets.pvpIcon,
                 onClick = {
                     // Navigate to Config screen with PVP mode
@@ -57,7 +57,7 @@ fun MainMenuScreen(gameClient: GameClient) {
             
             // Versus AI button
             MenuButton(
-                text = "Versus AI",
+                text = "Contra IA",
                 icon = GameAssets.pveIcon,
                 onClick = {
                     gameClient.navigateTo(org.dam.project.client.Screen.Config(isPvp = false))
@@ -66,7 +66,7 @@ fun MainMenuScreen(gameClient: GameClient) {
             
             // Hall of Fame button
             MenuButton(
-                text = "Hall of Fame",
+                text = "Salón de la Fama",
                 icon = GameAssets.recordsIcon,
                 onClick = {
                     gameClient.navigateTo(org.dam.project.client.Screen.Records)
@@ -75,7 +75,7 @@ fun MainMenuScreen(gameClient: GameClient) {
             
             // Exit button
             MenuButton(
-                text = "Exit",
+                text = "Salir",
                 icon = GameAssets.exitIcon,
                 onClick = {
                     System.exit(0)

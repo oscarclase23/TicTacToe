@@ -37,7 +37,7 @@ fun RecordsScreen(gameClient: GameClient) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "🏆 Hall of Fame",
+                text = "🏆 Salón de la Fama",
                 style = MaterialTheme.typography.displaySmall,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold
@@ -45,7 +45,7 @@ fun RecordsScreen(gameClient: GameClient) {
             IconButton(onClick = { gameClient.navigateTo(Screen.Menu) }) {
                 Image(
                     painter = painterResource(GameAssets.homeIcon),
-                    contentDescription = "Back",
+                    contentDescription = "Atrás",
                     modifier = Modifier.size(32.dp)
                 )
             }
@@ -237,7 +237,7 @@ private fun RecordCard(rank: Int, record: PlayerRecord) {
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         record.winsByBoardSize.entries.sortedBy { it.key }.forEach { (size, wins) ->
-                            StatPill("${size}×${size}", "$wins wins", MaterialTheme.colorScheme.tertiary)
+                            StatPill("${size}×${size}", "$wins victorias", MaterialTheme.colorScheme.tertiary)
                         }
                     }
                     Spacer(modifier = Modifier.height(12.dp))

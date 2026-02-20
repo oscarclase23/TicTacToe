@@ -34,7 +34,7 @@ fun LoginScreen(
             modifier = Modifier.padding(32.dp).width(400.dp)
         ) {
             Text(
-                text = "Enter the Battlefield",
+                text = "Entra en el Campo de Batalla",
                 style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -47,7 +47,7 @@ fun LoginScreen(
                     username = it
                     errorMessage = null
                 },
-                label = { Text("Warrior Name") },
+                label = { Text("Nombre de Guerrero") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 isError = errorMessage != null,
@@ -70,7 +70,7 @@ fun LoginScreen(
             Button(
                 onClick = {
                     if (username.isBlank()) {
-                        errorMessage = "Name cannot be empty!"
+                        errorMessage = "¡El nombre no puede estar vacío!"
                     } else {
                         // Call directly - NO scope.launch needed here.
                         // onLogin is plain (String)->Unit, App.kt handles the coroutine.
@@ -82,7 +82,7 @@ fun LoginScreen(
                     containerColor = MaterialTheme.colorScheme.primary
                 )
             ) {
-                Text("Join Battle", style = MaterialTheme.typography.titleMedium)
+                Text("Unirse a la Batalla", style = MaterialTheme.typography.titleMedium)
             }
         }
     }
