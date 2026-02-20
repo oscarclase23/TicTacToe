@@ -27,14 +27,23 @@ jobs:
         shell: cmd
         run: .\gradlew.bat :composeApp:packageMsi :composeApp:packageExe
 
-      - name: Rename installers
+      # Preparar artefactos para release
+      - name: Prepare Windows Artifacts
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path artifacts
-          $msi = Get-ChildItem -Path composeApp\build\compose\binaries\main\msi\*.msi | Select-Object -First 1
-          $exe = Get-ChildItem -Path composeApp\build\compose\binaries\main\exe\*.exe | Select-Object -First 1
-          if ($msi) { Copy-Item $msi.FullName -Destination "artifacts\TicTacToe-${{ github.ref_name }}.msi" }
-          if ($exe) { Copy-Item $exe.FullName -Destination "artifacts\TicTacToe-${{ github.ref_name }}.exe" }
+          # Buscar y mover .msi
+          $msiFiles = Get-ChildItem -Path composeApp\build\compose\binaries\main\msi -Filter "*.msi" -Recurse
+          foreach ($file in $msiFiles) {
+            Copy-Item $file.FullName -Destination "artifacts\TicTacToe-${{ github.ref_name }}.msi"
+          }
+          # Buscar y mover .exe
+          $exeFiles = Get-ChildItem -Path composeApp\build\compose\binaries\main\exe -Filter "*.exe" -Recurse
+          foreach ($file in $exeFiles) {
+            Copy-Item $file.FullName -Destination "artifacts\TicTacToe-${{ github.ref_name }}.exe"
+          }
+          # Listar lo que se preparó
+          Get-ChildItem artifacts
 
       - name: Upload Windows Artifacts
         uses: actions/upload-artifact@v4
@@ -53,6 +62,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: windows-installers
+
+      - name: List Downloaded Files
+        run: ls -la
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
