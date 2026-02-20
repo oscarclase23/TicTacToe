@@ -25,25 +25,28 @@ jobs:
 
       - name: Build Windows Installers
         shell: cmd
-        run: .\gradlew.bat :composeApp:packageMsi :composeApp:packageExe
+        run: .\gradlew.bat :composeApp:packageMsi
 
       # Preparar artefactos para release
       - name: Prepare Windows Artifacts
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path artifacts
-          # Buscar y mover .msi
-          $msiFiles = Get-ChildItem -Path composeApp\build\compose\binaries\main\msi -Filter "*.msi" -Recurse
+          # Buscar y copiar .msi
+          $msiFiles = Get-ChildItem -Path composeApp\build\compose\binaries\main\msi -Filter "*.msi" -Recurse -ErrorAction SilentlyContinue
           foreach ($file in $msiFiles) {
             Copy-Item $file.FullName -Destination "artifacts\TicTacToe-${{ github.ref_name }}.msi"
           }
-          # Buscar y mover .exe
-          $exeFiles = Get-ChildItem -Path composeApp\build\compose\binaries\main\exe -Filter "*.exe" -Recurse
+          # Buscar y copiar .exe (generados junto con MSI)
+          $exeFiles = Get-ChildItem -Path composeApp\build\compose\binaries\main -Filter "*.exe" -Recurse -ErrorAction SilentlyContinue
           foreach ($file in $exeFiles) {
-            Copy-Item $file.FullName -Destination "artifacts\TicTacToe-${{ github.ref_name }}.exe"
+            if ($file.Name -notmatch "gradlew") {
+              Copy-Item $file.FullName -Destination "artifacts\TicTacToe-${{ github.ref_name }}.exe"
+            }
           }
           # Listar lo que se preparó
-          Get-ChildItem artifacts
+          Write-Host "Artefactos preparados:"
+          Get-ChildItem -Path artifacts -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
 
       - name: Upload Windows Artifacts
         uses: actions/upload-artifact@v4
