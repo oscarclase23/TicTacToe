@@ -7,91 +7,68 @@ on:
 
 jobs:
 
-  # ---------- JOB 1: BUILD WINDOWS ----------
+  # -------- BUILD WINDOWS --------
   build-desktop:
     runs-on: windows-latest
 
     steps:
+
       - name: Checkout
         uses: actions/checkout@v4
 
 
-      - name: Set up JDK 17
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          distribution: temurin
+          java-version: 17
 
 
-      - name: Install WiX Toolset
-        run: |
-          choco install wixtoolset -y
-          refreshenv
+      - name: Install WiX
+        run: choco install wixtoolset -y
 
 
-      # 🔧 GENERA MSI + EXE (IMPORTANTE)
-      - name: Build Windows Installers
-        shell: cmd
+      # 🔥 BUILD REAL
+      - name: Build Installers
         run: |
           .\gradlew.bat clean
-          .\gradlew.bat :composeApp:packageMsi
-          .\gradlew.bat :composeApp:packageExe
+          .\gradlew.bat packageMsi
+          .\gradlew.bat packageExe
 
 
-      # 🔧 PREPARAR ARCHIVOS PARA RELEASE
-      - name: Prepare Windows Artifacts
+      # 🔍 DEBUG (MUY IMPORTANTE)
+      - name: Show Build Folder
+        run: |
+          dir composeApp\build\compose /s
+
+
+      # 📦 PREPARAR ARCHIVOS
+      - name: Prepare Artifacts
         shell: pwsh
         run: |
 
-          New-Item -ItemType Directory -Force -Path artifacts
+          mkdir artifacts -Force
 
-
-          Write-Host "Buscando MSI..."
-
-          Get-ChildItem `
-            -Path composeApp\build\compose\binaries `
-            -Filter *.msi `
-            -Recurse `
-            -ErrorAction SilentlyContinue | ForEach-Object {
-
-              Copy-Item $_.FullName `
-              -Destination "artifacts\TicTacToe-${{ github.ref_name }}.msi"
-
-              Write-Host "MSI encontrado:"
-              Write-Host $_.FullName
+          Get-ChildItem -Recurse -Filter *.msi | % {
+              Copy-Item $_ artifacts\TicTacToe-${{ github.ref_name }}.msi
           }
 
-
-
-          Write-Host "Buscando EXE..."
-
-          Get-ChildItem `
-            -Path composeApp\build\compose\binaries `
-            -Filter *.exe `
-            -Recurse `
-            -ErrorAction SilentlyContinue | ForEach-Object {
-
-              Copy-Item $_.FullName `
-              -Destination "artifacts\TicTacToe-${{ github.ref_name }}.exe"
-
-              Write-Host "EXE encontrado:"
-              Write-Host $_.FullName
+          Get-ChildItem -Recurse -Filter *.exe | % {
+              Copy-Item $_ artifacts\TicTacToe-${{ github.ref_name }}.exe
           }
 
-
-          Write-Host "Archivos preparados:"
-          Get-ChildItem artifacts
+          dir artifacts
 
 
-      - name: Upload Windows Artifacts
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: windows-installers
+          name: windows
           path: artifacts/*
 
 
 
-  # ---------- JOB 2: CREATE RELEASE ----------
+  # -------- RELEASE --------
   release:
 
     needs: build-desktop
@@ -103,23 +80,15 @@ jobs:
 
     steps:
 
-      - name: Download Artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
-          name: windows-installers
-
-
-      - name: Show Files
-        run: ls -la
+          name: windows
 
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
-          draft: false
-          prerelease: false
           files: |
             *.msi
             *.exe
