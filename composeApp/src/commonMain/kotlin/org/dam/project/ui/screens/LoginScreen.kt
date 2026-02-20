@@ -34,7 +34,7 @@ fun LoginScreen(
             modifier = Modifier.padding(32.dp).width(400.dp)
         ) {
             Text(
-                text = "Entra en el Campo de Batalla",
+                text = "Tic-Tac-Toe",
                 style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -47,7 +47,7 @@ fun LoginScreen(
                     username = it
                     errorMessage = null
                 },
-                label = { Text("Nombre de Guerrero") },
+                label = { Text("Nombre de Jugador") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 isError = errorMessage != null,
@@ -82,7 +82,7 @@ fun LoginScreen(
                     containerColor = MaterialTheme.colorScheme.primary
                 )
             ) {
-                Text("Unirse a la Batalla", style = MaterialTheme.typography.titleMedium)
+                Text("Continuar", style = MaterialTheme.typography.titleMedium)
             }
         }
     }

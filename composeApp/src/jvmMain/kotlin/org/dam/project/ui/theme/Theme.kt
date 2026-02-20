@@ -4,7 +4,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 
 @Composable
-fun MedievalTheme(
+fun GameTheme(
     darkTheme: Boolean = true,
     content: @Composable () -> Unit
 ) {

@@ -20,7 +20,7 @@ import org.dam.project.ui.screens.GameScreen
 import org.dam.project.ui.screens.LoginScreen
 import org.dam.project.ui.screens.MainMenuScreen
 import org.dam.project.ui.screens.RecordsScreen
-import org.dam.project.ui.theme.MedievalTheme
+import org.dam.project.ui.theme.GameTheme
 
 /**
  * Root composable for the application.
@@ -47,7 +47,7 @@ fun App() {
     var username by remember { mutableStateOf("Player") }
     val uiState by gameClient.uiState.collectAsState()
 
-    MedievalTheme {
+    GameTheme {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background

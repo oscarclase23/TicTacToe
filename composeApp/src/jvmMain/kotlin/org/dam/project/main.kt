@@ -15,7 +15,7 @@ fun main() {
     application {
     Window(
         onCloseRequest = ::exitApplication,
-        title = "Medieval Battle - Tic-Tac-Toe",
+        title = "Tic-Tac-Toe",
         state = rememberWindowState(size = DpSize(1200.dp, 800.dp))
     ) {
         App()

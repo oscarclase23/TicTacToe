@@ -32,13 +32,13 @@ fun MainMenuScreen(gameClient: GameClient) {
         ) {
             // Title
             Text(
-                text = "Batalla Medieval",
+                text = "Tic-Tac-Toe",
                 style = MaterialTheme.typography.displayLarge,
                 color = MaterialTheme.colorScheme.primary
             )
             
             Text(
-                text = "Bienvenido, ${gameClient.getPlayerName() ?: "Guerrero"}",
+                text = "Bienvenido, ${gameClient.getPlayerName() ?: "Jugador"}",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )

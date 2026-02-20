@@ -3,13 +3,13 @@
         {
             "playerName": "oscar",
             "wins": 10,
-            "losses": 17,
+            "losses": 18,
             "draws": 2,
             "bestStreak": 5,
             "pvpWins": 2,
             "pvpLosses": 5,
             "pveWins": 8,
-            "pveLosses": 12,
+            "pveLosses": 13,
             "pveDraws": 2,
             "winsByBoardSize": {
                 "3": 10
@@ -18,7 +18,7 @@
                 "EASY": 8
             },
             "gamesVsAI": {
-                "EASY": 16,
+                "EASY": 17,
                 "HARD": 5,
                 "MEDIUM": 1
             },

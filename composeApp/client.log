@@ -1,9 +1,9 @@
-=== Log started at 2026-02-20T15:41:12.2400706 ===
+=== Log started at 2026-02-20T15:58:28.0044363 ===
 Logging to file: C:\Users\oscar\Documents\IntelliJ\TicTacToe\composeApp\client.log
 [NetworkClient] Connection closed
 [NetworkClient] Connection closed
 [NetworkClient] Connecting to 127.0.0.1:5678...
 [NetworkClient] Connected to 127.0.0.1:5678
 [GameClient] Processed 5 records
-[GameClient] Connected with ID: 9d36cd0e-8da5-40be-882d-055ec17f5d94
+[GameClient] Connected with ID: 1bf44609-2bac-473b-9a6d-4b77f6b36324
 [GameClient] Starting message listener...

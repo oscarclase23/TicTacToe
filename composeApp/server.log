@@ -1,4 +1,4 @@
-=== Log started at 2026-02-20T15:41:07.4143494 ===
+=== Log started at 2026-02-20T15:58:27.3241949 ===
 Logging to file: C:\Users\oscar\Documents\IntelliJ\TicTacToe\composeApp\server.log
 [ServerConfig] File not found: server.properties, using defaults
 [ServerConfig] Configuration: host=0.0.0.0, port=5678, maxClients=10
@@ -13,9 +13,9 @@ Logging to file: C:\Users\oscar\Documents\IntelliJ\TicTacToe\composeApp\server.l
 [ClientHandler] Enviando registros iniciales...
 [ClientHandler] Registros iniciales enviados.
 [ClientHandler] Recibido CONNECT de null
-[ClientHandler] Payload: {"playerName":"oscar","previousPlayerId":"bbbb6b97-cbb1-42a1-b227-020d9527f7bb"}
-[GameServer] Registered client: 9d36cd0e-8da5-40be-882d-055ec17f5d94 (oscar)
-[ClientHandler] Jugador conectado: 9d36cd0e-8da5-40be-882d-055ec17f5d94 (oscar)
+[ClientHandler] Payload: {"playerName":"oscar","previousPlayerId":"30a8c1e6-396d-4e8c-8bfd-39cef22fa6e6"}
+[GameServer] Registered client: 1bf44609-2bac-473b-9a6d-4b77f6b36324 (oscar)
+[ClientHandler] Jugador conectado: 1bf44609-2bac-473b-9a6d-4b77f6b36324 (oscar)
 [ClientHandler] Error de conexión: Connection reset
-[GameServer] Unregistered client: 9d36cd0e-8da5-40be-882d-055ec17f5d94
-[ClientHandler] Cliente desconectado: 9d36cd0e-8da5-40be-882d-055ec17f5d94
+[GameServer] Unregistered client: 1bf44609-2bac-473b-9a6d-4b77f6b36324
+[ClientHandler] Cliente desconectado: 1bf44609-2bac-473b-9a6d-4b77f6b36324
