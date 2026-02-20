@@ -6,11 +6,15 @@ on:
       - 'v*'
 
 jobs:
-  # --- JOB 1: WINDOWS (MSI y EXE) ---
+
+  # ---------- JOB 1: BUILD WINDOWS ----------
   build-desktop:
     runs-on: windows-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -18,41 +22,66 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+
       - name: Install WiX Toolset
         run: |
           choco install wixtoolset -y
           refreshenv
 
+
+      # 🔧 GENERA MSI + EXE (IMPORTANTE)
       - name: Build Windows Installers
         shell: cmd
-        run: .\gradlew.bat :composeApp:packageMsi :composeApp:packageDistributionForCurrentOS
+        run: |
+          .\gradlew.bat clean
+          .\gradlew.bat :composeApp:packageMsi
+          .\gradlew.bat :composeApp:packageExe
 
-      # Preparar artefactos para release
+
+      # 🔧 PREPARAR ARCHIVOS PARA RELEASE
       - name: Prepare Windows Artifacts
         shell: pwsh
         run: |
+
           New-Item -ItemType Directory -Force -Path artifacts
-          # Buscar .msi en la carpeta msi
-          $msiFiles = Get-ChildItem -Path composeApp\build\compose\binaries\main\msi -Filter "*.msi" -Recurse -ErrorAction SilentlyContinue
-          foreach ($file in $msiFiles) {
-            Copy-Item $file.FullName -Destination "artifacts\TicTacToe-${{ github.ref_name }}.msi"
-            Write-Host "Copiado: $($file.FullName)"
+
+
+          Write-Host "Buscando MSI..."
+
+          Get-ChildItem `
+            -Path composeApp\build\compose\binaries `
+            -Filter *.msi `
+            -Recurse `
+            -ErrorAction SilentlyContinue | ForEach-Object {
+
+              Copy-Item $_.FullName `
+              -Destination "artifacts\TicTacToe-${{ github.ref_name }}.msi"
+
+              Write-Host "MSI encontrado:"
+              Write-Host $_.FullName
           }
-          # Buscar .exe en distributions (directorio portable)
-          $exeFiles = Get-ChildItem -Path composeApp\build\compose\distributions -Filter "*.exe" -Recurse -ErrorAction SilentlyContinue
-          foreach ($file in $exeFiles) {
-            Copy-Item $file.FullName -Destination "artifacts\TicTacToe-${{ github.ref_name }}.exe"
-            Write-Host "Copiado: $($file.FullName)"
+
+
+
+          Write-Host "Buscando EXE..."
+
+          Get-ChildItem `
+            -Path composeApp\build\compose\binaries `
+            -Filter *.exe `
+            -Recurse `
+            -ErrorAction SilentlyContinue | ForEach-Object {
+
+              Copy-Item $_.FullName `
+              -Destination "artifacts\TicTacToe-${{ github.ref_name }}.exe"
+
+              Write-Host "EXE encontrado:"
+              Write-Host $_.FullName
           }
-          # También buscar en app (en algunos casos)
-          $appExe = Get-ChildItem -Path composeApp\build\compose\binaries\main\app -Filter "*.exe" -Recurse -ErrorAction SilentlyContinue
-          foreach ($file in $appExe) {
-            Copy-Item $file.FullName -Destination "artifacts\TicTacToe-${{ github.ref_name }}.exe"
-            Write-Host "Copiado: $($file.FullName)"
-          }
-          # Listar lo que se preparó
-          Write-Host "Artefactos preparados:"
-          Get-ChildItem -Path artifacts -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
+
+
+          Write-Host "Archivos preparados:"
+          Get-ChildItem artifacts
+
 
       - name: Upload Windows Artifacts
         uses: actions/upload-artifact@v4
@@ -60,20 +89,29 @@ jobs:
           name: windows-installers
           path: artifacts/*
 
-  # --- JOB 2: PUBLICAR RELEASE ---
+
+
+  # ---------- JOB 2: CREATE RELEASE ----------
   release:
-    needs: [build-desktop]
+
+    needs: build-desktop
+
     runs-on: ubuntu-latest
+
     permissions:
       contents: write
+
     steps:
-      - name: Download Windows Artifacts
+
+      - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
           name: windows-installers
 
-      - name: List Downloaded Files
+
+      - name: Show Files
         run: ls -la
+
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -85,5 +123,6 @@ jobs:
           files: |
             *.msi
             *.exe
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
