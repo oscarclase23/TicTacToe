@@ -7,8 +7,8 @@ on:
 
 jobs:
 
-  # -------- BUILD WINDOWS --------
   build-desktop:
+
     runs-on: windows-latest
 
     steps:
@@ -36,10 +36,10 @@ jobs:
           .\gradlew.bat packageExe
 
 
-      # 🔍 DEBUG (MUY IMPORTANTE)
-      - name: Show Build Folder
+      # 🔍 DEBUG
+      - name: Show Build Files
         run: |
-          dir composeApp\build\compose /s
+          dir composeApp\build /s
 
 
       # 📦 PREPARAR ARCHIVOS
@@ -68,7 +68,6 @@ jobs:
 
 
 
-  # -------- RELEASE --------
   release:
 
     needs: build-desktop
@@ -89,6 +88,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
           files: |
             *.msi
             *.exe
