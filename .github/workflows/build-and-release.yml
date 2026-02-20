@@ -38,9 +38,9 @@ jobs:
 
       # 🔍 DEBUG
       - name: Show Build Files
+        shell: pwsh
         run: |
-          dir composeApp\build /s
-
+            Get-ChildItem composeApp\build -Recurse
 
       # 📦 PREPARAR ARCHIVOS
       - name: Prepare Artifacts
