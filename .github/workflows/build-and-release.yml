@@ -6,16 +6,12 @@ on:
       - 'v*'
 
 jobs:
-
   build-desktop:
-
     runs-on: windows-latest
 
     steps:
-
       - name: Checkout
         uses: actions/checkout@v4
-
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -23,66 +19,57 @@ jobs:
           distribution: temurin
           java-version: 17
 
-
       - name: Install WiX
         run: choco install wixtoolset -y
 
-
-      # 🔥 BUILD REAL
+      # 🔥 BUILD REAL (Usamos :composeApp: para asegurarnos de que construye el módulo correcto)
       - name: Build Installers
         run: |
           .\gradlew.bat clean
-          .\gradlew.bat packageMsi
-          .\gradlew.bat packageExe
-
-
-      # 🔍 DEBUG
-      - name: Show Build Files
-        shell: pwsh
-        run: |
-            Get-ChildItem composeApp\build -Recurse
+          .\gradlew.bat :composeApp:packageMsi
+          .\gradlew.bat :composeApp:packageExe
 
       # 📦 PREPARAR ARCHIVOS
       - name: Prepare Artifacts
         shell: pwsh
         run: |
-
           mkdir artifacts -Force
 
-          Get-ChildItem -Recurse -Filter *.msi | % {
-              Copy-Item $_ artifacts\TicTacToe-${{ github.ref_name }}.msi
+          # Buscamos EXCLUSIVAMENTE dentro de la carpeta donde Compose genera los instaladores finales
+          # Así evitamos copiar gradlew.exe u otras cosas por error.
+          
+          $msi = Get-ChildItem -Path composeApp\build\compose\binaries -Filter *.msi -Recurse | Select-Object -First 1
+          if ($msi) { 
+              Copy-Item $msi.FullName -Destination "artifacts\TicTacToe-${{ github.ref_name }}.msi" 
+              Write-Host "Encontrado y copiado: $($msi.FullName)"
           }
 
-          Get-ChildItem -Recurse -Filter *.exe | % {
-              Copy-Item $_ artifacts\TicTacToe-${{ github.ref_name }}.exe
+          $exe = Get-ChildItem -Path composeApp\build\compose\binaries -Filter *.exe -Recurse | Select-Object -First 1
+          if ($exe) { 
+              Copy-Item $exe.FullName -Destination "artifacts\TicTacToe-${{ github.ref_name }}.exe"
+              Write-Host "Encontrado y copiado: $($exe.FullName)"
           }
-
-          dir artifacts
-
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: windows
-          path: artifacts/*
-
-
+          name: windows-installers
+          path: artifacts/
 
   release:
-
     needs: build-desktop
-
     runs-on: ubuntu-latest
-
+    
+    # 👈 Esto es VITAL para que el bot de GitHub tenga permiso para publicar la Release
     permissions:
-      contents: write
+      contents: write 
 
     steps:
-
-      - uses: actions/download-artifact@v4
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
         with:
-          name: windows
-
+          name: windows-installers
+          path: ./artifacts
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -90,8 +77,8 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
           files: |
-            *.msi
-            *.exe
-
+            ./artifacts/*.msi
+            ./artifacts/*.exe
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
