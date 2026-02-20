@@ -1,8 +1,8 @@
-=== Log started at 2026-02-20T15:58:27.3241949 ===
+=== Log started at 2026-02-20T19:35:57.8203664 ===
 Logging to file: C:\Users\oscar\Documents\IntelliJ\TicTacToe\composeApp\server.log
 [ServerConfig] File not found: server.properties, using defaults
 [ServerConfig] Configuration: host=0.0.0.0, port=5678, maxClients=10
-[RecordsManager] Loaded 5 records from records.json
+[RecordsManager] Loaded 6 records from records.json
 [GameServer] Restored 1 active games
 [GameServer] Server started on 0.0.0.0:5678
 [GameServer] Max clients: 10
@@ -13,9 +13,104 @@ Logging to file: C:\Users\oscar\Documents\IntelliJ\TicTacToe\composeApp\server.l
 [ClientHandler] Enviando registros iniciales...
 [ClientHandler] Registros iniciales enviados.
 [ClientHandler] Recibido CONNECT de null
-[ClientHandler] Payload: {"playerName":"oscar","previousPlayerId":"30a8c1e6-396d-4e8c-8bfd-39cef22fa6e6"}
-[GameServer] Registered client: 1bf44609-2bac-473b-9a6d-4b77f6b36324 (oscar)
-[ClientHandler] Jugador conectado: 1bf44609-2bac-473b-9a6d-4b77f6b36324 (oscar)
-[ClientHandler] Error de conexión: Connection reset
-[GameServer] Unregistered client: 1bf44609-2bac-473b-9a6d-4b77f6b36324
-[ClientHandler] Cliente desconectado: 1bf44609-2bac-473b-9a6d-4b77f6b36324
+[ClientHandler] Payload: {"playerName":"oscar"}
+[GameServer] Registered client: 112c6f25-e26b-4341-8175-0cbf553afa29 (oscar)
+[ClientHandler] Jugador conectado: 112c6f25-e26b-4341-8175-0cbf553afa29 (oscar)
+[GameServer] Unregistered client: 112c6f25-e26b-4341-8175-0cbf553afa29
+[ClientHandler] Cliente desconectado: 112c6f25-e26b-4341-8175-0cbf553afa29
+[GameServer] New connection request from /127.0.0.1
+[ClientHandler] Cliente conectado desde /127.0.0.1
+[ClientHandler] Enviando registros iniciales...
+[ClientHandler] Registros iniciales enviados.
+[ClientHandler] Recibido CONNECT de null
+[ClientHandler] Payload: {"playerName":"oscar"}
+[GameServer] Registered client: 4bfe61bf-04d5-4a51-9000-7499b43691f1 (oscar)
+[ClientHandler] Jugador conectado: 4bfe61bf-04d5-4a51-9000-7499b43691f1 (oscar)
+[GameServer] Unregistered client: 4bfe61bf-04d5-4a51-9000-7499b43691f1
+[ClientHandler] Cliente desconectado: 4bfe61bf-04d5-4a51-9000-7499b43691f1
+[GameServer] New connection request from /127.0.0.1
+[ClientHandler] Cliente conectado desde /127.0.0.1
+[ClientHandler] Enviando registros iniciales...
+[ClientHandler] Registros iniciales enviados.
+[ClientHandler] Recibido CONNECT de null
+[ClientHandler] Payload: {"playerName":"oscar"}
+[GameServer] Registered client: 159baab9-4754-413d-bb7b-f3135d7495c9 (oscar)
+[ClientHandler] Jugador conectado: 159baab9-4754-413d-bb7b-f3135d7495c9 (oscar)
+[GameServer] Unregistered client: 159baab9-4754-413d-bb7b-f3135d7495c9
+[ClientHandler] Cliente desconectado: 159baab9-4754-413d-bb7b-f3135d7495c9
+[GameServer] New connection request from /127.0.0.1
+[ClientHandler] Cliente conectado desde /127.0.0.1
+[ClientHandler] Enviando registros iniciales...
+[ClientHandler] Registros iniciales enviados.
+[ClientHandler] Recibido CONNECT de null
+[ClientHandler] Payload: {"playerName":"oscar","previousPlayerId":"159baab9-4754-413d-bb7b-f3135d7495c9"}
+[GameServer] Registered client: f36a4c8c-6467-484b-bce1-664b877627aa (oscar)
+[ClientHandler] Jugador conectado: f36a4c8c-6467-484b-bce1-664b877627aa (oscar)
+[GameServer] Unregistered client: f36a4c8c-6467-484b-bce1-664b877627aa
+[ClientHandler] Cliente desconectado: f36a4c8c-6467-484b-bce1-664b877627aa
+[GameServer] New connection request from /127.0.0.1
+[ClientHandler] Cliente conectado desde /127.0.0.1
+[ClientHandler] Enviando registros iniciales...
+[ClientHandler] Registros iniciales enviados.
+[ClientHandler] Recibido CONNECT de null
+[ClientHandler] Payload: {"playerName":"oscar","previousPlayerId":"159baab9-4754-413d-bb7b-f3135d7495c9"}
+[GameServer] Registered client: ac58b83f-f768-464b-bc93-cb46baac4ed2 (oscar)
+[ClientHandler] Jugador conectado: ac58b83f-f768-464b-bc93-cb46baac4ed2 (oscar)
+[GameServer] Unregistered client: ac58b83f-f768-464b-bc93-cb46baac4ed2
+[ClientHandler] Cliente desconectado: ac58b83f-f768-464b-bc93-cb46baac4ed2
+[GameServer] New connection request from /127.0.0.1
+[ClientHandler] Cliente conectado desde /127.0.0.1
+[ClientHandler] Enviando registros iniciales...
+[ClientHandler] Registros iniciales enviados.
+[ClientHandler] Recibido CONNECT de null
+[ClientHandler] Payload: {"playerName":"oscar","previousPlayerId":"159baab9-4754-413d-bb7b-f3135d7495c9"}
+[GameServer] Registered client: 2af4a815-9b17-4cfb-9bdb-59c1410b791f (oscar)
+[ClientHandler] Jugador conectado: 2af4a815-9b17-4cfb-9bdb-59c1410b791f (oscar)
+[GameServer] Unregistered client: 2af4a815-9b17-4cfb-9bdb-59c1410b791f
+[ClientHandler] Cliente desconectado: 2af4a815-9b17-4cfb-9bdb-59c1410b791f
+[GameServer] New connection request from /127.0.0.1
+[ClientHandler] Cliente conectado desde /127.0.0.1
+[ClientHandler] Enviando registros iniciales...
+[ClientHandler] Registros iniciales enviados.
+[ClientHandler] Recibido CONNECT de null
+[ClientHandler] Payload: {"playerName":"oscar","previousPlayerId":"2af4a815-9b17-4cfb-9bdb-59c1410b791f"}
+[GameServer] Registered client: 5cfaff35-786b-407e-9802-1a8bb90b3ca0 (oscar)
+[ClientHandler] Jugador conectado: 5cfaff35-786b-407e-9802-1a8bb90b3ca0 (oscar)
+[GameServer] Unregistered client: 5cfaff35-786b-407e-9802-1a8bb90b3ca0
+[ClientHandler] Cliente desconectado: 5cfaff35-786b-407e-9802-1a8bb90b3ca0
+[GameServer] New connection request from /127.0.0.1
+[ClientHandler] Cliente conectado desde /127.0.0.1
+[ClientHandler] Enviando registros iniciales...
+[ClientHandler] Registros iniciales enviados.
+[ClientHandler] Recibido CONNECT de null
+[ClientHandler] Payload: {"playerName":"oscar","previousPlayerId":"2af4a815-9b17-4cfb-9bdb-59c1410b791f"}
+[GameServer] Registered client: 3d01e432-5968-4c3c-bc45-c061cc950c23 (oscar)
+[ClientHandler] Jugador conectado: 3d01e432-5968-4c3c-bc45-c061cc950c23 (oscar)
+[GameServer] Unregistered client: 3d01e432-5968-4c3c-bc45-c061cc950c23
+[ClientHandler] Cliente desconectado: 3d01e432-5968-4c3c-bc45-c061cc950c23
+[GameServer] New connection request from /127.0.0.1
+[ClientHandler] Cliente conectado desde /127.0.0.1
+[ClientHandler] Enviando registros iniciales...
+[ClientHandler] Registros iniciales enviados.
+[ClientHandler] Recibido CONNECT de null
+[ClientHandler] Payload: {"playerName":"oscar","previousPlayerId":"2af4a815-9b17-4cfb-9bdb-59c1410b791f"}
+[GameServer] Registered client: 574f64f5-2ad9-4cea-b6d8-29aa2f98ad7d (oscar)
+[ClientHandler] Jugador conectado: 574f64f5-2ad9-4cea-b6d8-29aa2f98ad7d (oscar)
+[GameServer] Unregistered client: 574f64f5-2ad9-4cea-b6d8-29aa2f98ad7d
+[ClientHandler] Cliente desconectado: 574f64f5-2ad9-4cea-b6d8-29aa2f98ad7d
+[GameServer] New connection request from /127.0.0.1
+[ClientHandler] Cliente conectado desde /127.0.0.1
+[ClientHandler] Enviando registros iniciales...
+[ClientHandler] Registros iniciales enviados.
+[ClientHandler] Recibido CONNECT de null
+[ClientHandler] Payload: {"playerName":"oscar"}
+[GameServer] Registered client: 3e9bef9d-d0cf-4f03-aba4-932eb2fc4e26 (oscar)
+[ClientHandler] Jugador conectado: 3e9bef9d-d0cf-4f03-aba4-932eb2fc4e26 (oscar)
+[GameServer] New connection request from /127.0.0.1
+[ClientHandler] Cliente conectado desde /127.0.0.1
+[ClientHandler] Enviando registros iniciales...
+[ClientHandler] Registros iniciales enviados.
+[ClientHandler] Recibido CONNECT de null
+[ClientHandler] Payload: {"playerName":"oscar","previousPlayerId":"3e9bef9d-d0cf-4f03-aba4-932eb2fc4e26"}
+[GameServer] Registered client: b93f204e-5291-4dcf-9854-adce59cd39b0 (oscar)
+[ClientHandler] Jugador conectado: b93f204e-5291-4dcf-9854-adce59cd39b0 (oscar)

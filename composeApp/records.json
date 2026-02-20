@@ -2,42 +2,42 @@
     "records": [
         {
             "playerName": "oscar",
-            "wins": 10,
-            "losses": 18,
-            "draws": 2,
+            "wins": 11,
+            "losses": 24,
+            "draws": 3,
             "bestStreak": 5,
-            "pvpWins": 2,
-            "pvpLosses": 5,
+            "pvpWins": 3,
+            "pvpLosses": 6,
             "pveWins": 8,
-            "pveLosses": 13,
-            "pveDraws": 2,
+            "pveLosses": 18,
+            "pveDraws": 3,
             "winsByBoardSize": {
-                "3": 10
+                "3": 11
             },
             "winVsAI": {
                 "EASY": 8
             },
             "gamesVsAI": {
-                "EASY": 17,
+                "EASY": 23,
                 "HARD": 5,
                 "MEDIUM": 1
             },
-            "totalMoves": 187,
-            "totalMoveTimeSeconds": 316,
+            "totalMoves": 211,
+            "totalMoveTimeSeconds": 366,
             "favoriteMove": {
                 "row": 1,
                 "col": 1
             },
             "moveFrequencies": {
-                "2,0": 22,
-                "2,2": 21,
-                "0,1": 22,
-                "1,0": 19,
-                "0,2": 23,
-                "0,0": 18,
-                "1,2": 14,
+                "2,0": 23,
+                "2,2": 25,
+                "0,1": 25,
+                "1,0": 21,
+                "0,2": 27,
+                "0,0": 21,
+                "1,2": 18,
                 "2,1": 20,
-                "1,1": 28
+                "1,1": 31
             }
         },
         {
@@ -132,6 +132,29 @@
             "pvpWins": 1,
             "winsByBoardSize": {
                 "3": 1
+            }
+        },
+        {
+            "playerName": "jugador2",
+            "wins": 1,
+            "losses": 1,
+            "currentStreak": 1,
+            "bestStreak": 1,
+            "pvpWins": 1,
+            "pvpLosses": 1,
+            "winsByBoardSize": {
+                "3": 1
+            },
+            "totalMoves": 4,
+            "totalMoveTimeSeconds": 12,
+            "favoriteMove": {
+                "row": 1,
+                "col": 1
+            },
+            "moveFrequencies": {
+                "1,1": 2,
+                "1,0": 1,
+                "0,1": 1
             }
         }
     ]
